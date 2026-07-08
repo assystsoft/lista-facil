@@ -1,0 +1,9 @@
+Version: 0.9.9.0
+Saved at: 2026-07-05
+Published: no
+Production URL: https://ilistafacil.netlify.app remains on previous published version until requested.
+Notes:
+- Added animated opening splash screen with app logo.
+- Added provisional login screen after splash for future authentication.
+- Login buttons currently continue into the app without authentication.
+- Existing shopping list features preserved.

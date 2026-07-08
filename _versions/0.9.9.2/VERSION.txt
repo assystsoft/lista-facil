@@ -1,0 +1,13 @@
+Version: 0.9.9.2
+Saved at: 2026-07-05
+Published: no
+Production URL: https://ilistafacil.netlify.app remains unchanged until requested.
+Notes:
+- Added monetization foundation with feature flags.
+- Added plans: Gratuito, Premium, Família, Mercado Parceiro.
+- Added current plan state in isolated localStorage key.
+- Added Premium modal with plan cards and partner market block.
+- Added WhatsApp/native share export for current list.
+- Added purchase history snapshot before Nova compra reset.
+- Added optional partner offers slot hidden by default.
+- Existing list, categories, sync, dark mode and reset behavior preserved.

@@ -1,0 +1,7 @@
+Version: 0.9.9
+Saved at: 2026-07-05
+Production URL: https://ilistafacil.netlify.app
+Notes:
+- Current published version after fixing edit modal button text alignment.
+- Includes floating add-item popup while preserving the fixed add-item form below search.
+- Netlify project link corrected to ilistafacil site.

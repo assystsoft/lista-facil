@@ -1,0 +1,9 @@
+Lista Facil version 0.9.5
+Saved on: 2026-07-03 America/Sao_Paulo
+Production URL at save time: https://ismartlistapp.netlify.app
+Notes:
+- Dark mode settings button fixed to white background.
+- Category header text alignment fixed for mobile/Safari.
+- Button native appearance neutralized.
+- Service worker cache version: lista-facil-v15.
+- Netlify production deploy confirmed after this state.

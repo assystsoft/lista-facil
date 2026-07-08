@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista Fácil</title>
+<meta name="theme-color" content="#ff7000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lista Fácil">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="smart-lista-icon-180.png">
+<link rel="icon" href="smart-lista-icon-192.png">
+<script>
+try {
+  if(localStorage.getItem("lista_facil_theme") === "dark"){
+    document.documentElement.dataset.theme = "dark";
+  }
+} catch(error) {}
+</script>
+
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f8f8fa;
+  --surface: #ffffff;
+  --surface-soft: #f1f1f5;
+  --ink: #101118;
+  --muted: #858893;
+  --line: #e8e9ee;
+  --brand: #ff6a00;
+  --brand-dark: #e85d00;
+  --brand-soft: #fff0e4;
+  --success: #52b82e;
+  --success-soft: #eaf8e6;
+  --danger: #d63230;
+  --shadow: 0 18px 42px rgba(23, 25, 31, 0.08);
+  --shadow-soft: 0 10px 24px rgba(23, 25, 31, 0.07);
+  --radius: 18px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111217;
+  --surface: #1b1c23;
+  --surface-soft: #262832;
+  --ink: #f4f5f8;
+  --muted: #a5a8b3;
+  --line: #333640;
+  --brand-soft: #3a2618;
+  --shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  --shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.26);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 106, 0, 0.08), transparent 280px),
+    radial-gradient(circle at 86% 18%, rgba(16, 17, 24, 0.045), transparent 220px),
+    linear-gradient(180deg, #ffffff 0, var(--bg) 390px);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 106, 0, 0.12), transparent 280px),
+    radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.055), transparent 220px),
+    linear-gradient(180deg, #171820 0, var(--bg) 390px);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: inherit;
+  text-align: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.app-shell {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
+}
+
+.hero {
+  padding: calc(34px + env(safe-area-inset-top)) 26px 18px;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+.app-icon {
+  width: 62px;
+  height: 62px;
+  border-radius: 19px;
+  box-shadow: 0 13px 30px rgba(255, 106, 0, 0.16);
+}
+
+.title-group {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-top: 6px;
+}
+
+h1 {
+  font-size: 31px;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.icon-btn {
+  border: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 19px;
+  background: #15161b;
+  color: white;
+  box-shadow: var(--shadow-soft);
+  font-size: 23px;
+}
+
+:root[data-theme="dark"] #settingsBtn {
+  background: #ffffff;
+  color: #101118;
+}
+
+.soft-icon-btn {
+  background: #f0f0f4;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .soft-icon-btn {
+  background: #262832;
+}
+
+.progress-card {
+  background: var(--surface);
+  border: 1px solid rgba(16, 17, 24, 0.06);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-top: 28px;
+  padding: 22px 20px 21px;
+}
+
+.progress-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.progress-count {
+  color: var(--brand);
+  font-size: 17px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.progress-row {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54px;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.progress-track {
+  background: #e8e9ee;
+  border-radius: 999px;
+  height: 13px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--brand), #ff8b1a);
+  border-radius: inherit;
+  height: 100%;
+  transition: width 180ms ease;
+  width: 0%;
+}
+
+.progress-percent {
+  color: var(--brand);
+  font-size: 18px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.container {
+  padding: 0 26px;
+}
+
+.toolbar {
+  display: grid;
+  gap: 12px;
+  margin: 4px 0 18px;
+}
+
+.search-bar,
+.add-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 54px;
+  gap: 12px;
+  align-items: center;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-wrap::before {
+  content: "⌕";
+  color: #7e828c;
+  font-size: 31px;
+  left: 20px;
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-54%);
+  z-index: 1;
+}
+
+.search-wrap .field {
+  padding-left: 56px;
+}
+
+.add-form {
+  grid-template-columns: minmax(0, 1fr) minmax(170px, 0.52fr) 54px;
+  background: rgba(255,255,255,0.74);
+  border: 1px solid rgba(16, 17, 24, 0.05);
+  border-radius: var(--radius);
+  padding: 10px;
+  box-shadow: 0 8px 18px rgba(23, 25, 31, 0.04);
+}
+
+.field {
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  background: var(--surface-soft);
+  border: 1px solid transparent;
+  border-radius: 17px;
+  color: var(--ink);
+  font-size: 17px;
+  outline: none;
+  padding: 14px 18px;
+}
+
+.field:focus {
+  background: var(--surface);
+  border-color: rgba(255, 106, 0, 0.44);
+  box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.12);
+}
+
+select.field {
+  overflow: hidden;
+  padding-left: 12px;
+  padding-right: 28px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.add-btn,
+.reset-btn,
+.small-btn,
+.qty-btn {
+  border: none;
+  font-weight: 800;
+}
+
+.add-btn {
+  min-height: 64px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+  border-radius: 19px;
+  box-shadow: 0 15px 32px rgba(255, 106, 0, 0.27);
+  font-size: 18px;
+  padding: 0 20px;
+}
+
+.reset-btn {
+  min-height: 64px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 19px;
+  color: var(--ink);
+  font-size: 18px;
+  padding: 0 18px;
+  box-shadow: 0 10px 22px rgba(23, 25, 31, 0.05);
+}
+
+.icon-btn.syncing,
+.reset-btn.syncing {
+  opacity: 0.55;
+}
+
+.sync-status {
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 16px;
+  padding: 0 4px 2px;
+}
+
+.sync-status.error {
+  color: var(--danger);
+}
+
+.sync-status.ok {
+  color: var(--brand);
+}
+
+.list-sections {
+  display: grid;
+  gap: 9px;
+}
+
+.category-section {
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  border: 1px solid rgba(16, 17, 24, 0.07);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.category-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface);
+  border: none;
+  color: var(--ink);
+  padding: 12px 14px;
+  text-align: left;
+  width: 100%;
+}
+
+.category-main {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.category-icon {
+  display: grid;
+  flex: 0 0 auto;
+  font-size: 27px;
+  height: 48px;
+  place-items: center;
+  width: 48px;
+  border-radius: 14px;
+}
+
+.category-icon.food { background: #fff0e4; color: #e45e00; }
+.category-icon.produce { background: #eaf8e6; color: #2e9d23; }
+.category-icon.bakery { background: #fff5df; color: #b37515; }
+.category-icon.dairy { background: #e9f5ff; color: #2878bc; }
+.category-icon.clean { background: #f2eaff; color: #7040b6; }
+.category-icon.default { background: #f1f2f6; color: #686b74; }
+
+.category-meta {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 10px;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.category {
+  color: var(--ink);
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.14;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: normal;
+  text-align: left;
+  word-break: normal;
+}
+
+.category-count {
+  flex: 0 0 auto;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 800;
+  padding: 5px 9px;
+}
+
+.category-toggle {
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  font-size: 28px;
+  height: 42px;
+  justify-self: end;
+  line-height: 1;
+  width: 42px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+  min-height: 52px;
+  padding: 7px 14px 7px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item-done {
+  background: linear-gradient(90deg, rgba(82,184,46,0.12), transparent);
+}
+
+.item-left {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr);
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.check-dot {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  background: var(--surface);
+  border: 2px solid #c8ccd5;
+  border-radius: 7px;
+  color: white;
+  font-size: 14px;
+  font-weight: 900;
+}
+
+.item-done .check-dot {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.item-name {
+  font-size: 18px;
+  line-height: 1.25;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.qty-control {
+  display: inline-grid;
+  grid-template-columns: 24px minmax(36px, auto) 24px;
+  align-items: center;
+  height: 30px;
+  background: var(--brand-soft);
+  border-radius: 11px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  width: 24px;
+  height: 30px;
+  background: transparent;
+  color: var(--brand);
+  font-size: 15px;
+}
+
+.qty-value {
+  min-width: 36px;
+  padding: 0 2px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--brand);
+  white-space: nowrap;
+}
+
+.small-btn {
+  width: 28px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border-radius: 10px;
+  color: #7f828b;
+  font-size: 20px;
+}
+
+.small-btn.danger {
+  background: transparent;
+  color: var(--danger);
+}
+
+.empty-state {
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+}
+
+.bottom-actions {
+  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border-top: 1px solid rgba(16,17,22,0.06);
+  bottom: 0;
+  left: 50%;
+  padding: 12px 26px calc(14px + env(safe-area-inset-bottom));
+  position: fixed;
+  transform: translateX(-50%);
+  width: min(560px, 100%);
+  z-index: 5;
+}
+
+.action-row {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.settings-backdrop {
+  align-items: end;
+  background: rgba(9, 10, 14, 0.34);
+  display: grid;
+  inset: 0;
+  padding: 18px;
+  position: fixed;
+  z-index: 20;
+}
+
+.settings-backdrop[hidden] {
+  display: none;
+}
+
+.settings-sheet {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 18px;
+  width: 100%;
+}
+
+.settings-head,
+.settings-option {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.settings-head {
+  margin-bottom: 10px;
+}
+
+.settings-title {
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.settings-close {
+  background: var(--surface-soft);
+  border: none;
+  border-radius: 14px;
+  color: var(--ink);
+  height: 42px;
+  width: 42px;
+}
+
+.settings-option {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  padding: 16px 2px;
+  text-align: left;
+  width: 100%;
+}
+
+.settings-option:first-of-type {
+  border-top: none;
+}
+
+.settings-label {
+  display: grid;
+  gap: 3px;
+}
+
+.settings-label strong {
+  font-size: 17px;
+}
+
+.settings-label span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.switch {
+  background: var(--line);
+  border-radius: 999px;
+  flex: 0 0 auto;
+  height: 30px;
+  padding: 3px;
+  width: 52px;
+}
+
+.switch-thumb {
+  background: white;
+  border-radius: 999px;
+  display: block;
+  height: 24px;
+  transition: transform 160ms ease;
+  width: 24px;
+}
+
+:root[data-theme="dark"] .switch {
+  background: var(--brand);
+}
+
+:root[data-theme="dark"] .switch-thumb {
+  transform: translateX(22px);
+}
+
+.settings-action {
+  color: var(--brand);
+  flex: 0 0 auto;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.edit-form {
+  display: grid;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.edit-field-group {
+  display: grid;
+  gap: 6px;
+}
+
+.edit-field-group label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.edit-field-group .field {
+  min-height: 52px;
+}
+
+.edit-actions {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding-top: 6px;
+}
+
+.edit-cancel,
+.edit-save {
+  border: none;
+  border-radius: 17px;
+  font-weight: 900;
+  min-height: 54px;
+}
+
+.edit-cancel {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.edit-save {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+}
+
+.category-manager {
+  display: grid;
+  gap: 14px;
+}
+
+.category-create {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 68px minmax(0, 1fr) 54px;
+}
+
+.category-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(48vh, 440px);
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.category-panel-status {
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 16px;
+}
+
+.category-panel-status.error {
+  color: var(--danger);
+}
+
+.category-panel-status.ok {
+  color: var(--brand);
+}
+
+.category-row {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 58px minmax(0, 1fr) 42px 42px;
+  padding: 8px;
+}
+
+.category-row .field {
+  min-height: 44px;
+  padding: 8px 10px;
+}
+
+.category-icon-input {
+  text-align: center;
+}
+
+.category-save {
+  background: #15161b;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  font-size: 20px;
+  font-weight: 900;
+  height: 42px;
+}
+
+.category-delete {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border: none;
+  border-radius: 14px;
+  color: var(--danger);
+  font-size: 22px;
+  font-weight: 900;
+  height: 42px;
+}
+
+:root[data-theme="dark"] .category-save {
+  background: var(--brand);
+}
+
+@media (max-width: 520px) {
+  h1 {
+    font-size: 29px;
+  }
+
+  .hero {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .container,
+  .bottom-actions {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-left: 18px;
+  }
+
+  .actions {
+    gap: 2px;
+  }
+
+  .reset-btn,
+  .add-btn {
+    font-size: 17px;
+    padding: 0 12px;
+  }
+
+  .add-form {
+    grid-template-columns: minmax(120px, 1fr) minmax(145px, 0.68fr) 54px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main class="app-shell">
+<header class="hero">
+  <div class="hero-top">
+    <div class="brand">
+      <img class="app-icon" src="smart-lista-icon-180.png" alt="">
+      <div class="title-group">
+        <h1>Lista Fácil</h1>
+        <div class="eyebrow">Sua lista de compras</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="settingsBtn" type="button" onclick="openSettings()" title="Configurações" aria-label="Configurações">⚙</button>
+  </div>
+
+  <div class="progress-card" aria-live="polite">
+    <div class="progress-head">
+      <div class="progress-title">Progresso da compra</div>
+      <div class="progress-count"><span id="doneCount">0</span> de <span id="totalCount">0</span> itens</div>
+    </div>
+    <div class="progress-row">
+      <div class="progress-track" aria-hidden="true">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <div class="progress-percent" id="progressPercent">0%</div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+<div class="toolbar">
+  <div class="search-bar">
+    <div class="search-wrap">
+      <input class="field" id="searchInput" type="search" placeholder="Buscar produto..." oninput="render()">
+    </div>
+    <button class="icon-btn soft-icon-btn" type="button" onclick="document.getElementById('searchInput').focus()" title="Buscar" aria-label="Buscar">☷</button>
+  </div>
+  <form class="add-bar add-form" onsubmit="addItem(event)">
+    <input class="field" id="newName" type="text" placeholder="Novo item" required>
+    <select class="field" id="newCat" aria-label="Categoria"></select>
+    <button class="icon-btn" type="submit" title="Adicionar" aria-label="Adicionar">＋</button>
+  </form>
+  <div class="sync-status" id="syncStatus">Sincronização aguardando conexão.</div>
+</div>
+
+<div class="list-sections" id="list"></div>
+</div>
+
+<div class="bottom-actions">
+  <div class="action-row">
+    <button class="reset-btn" type="button" onclick="document.getElementById('newName').focus()">⊕ Adicionar item</button>
+    <button class="add-btn" type="button" onclick="resetDoneItems()">↻ Nova compra</button>
+  </div>
+</div>
+</main>
+
+<div class="settings-backdrop" id="settingsPanel" hidden onclick="handleSettingsBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="settingsTitle">Configurações</div>
+      <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Fechar">×</button>
+    </div>
+
+    <button class="settings-option" type="button" onclick="toggleDarkMode()">
+      <span class="settings-label">
+        <strong>Modo escuro</strong>
+        <span id="themeStatus">Desativado</span>
+      </span>
+      <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="startNewPurchaseFromSettings()">
+      <span class="settings-label">
+        <strong>Nova compra</strong>
+        <span>Desmarca os itens concluídos</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">↻</span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="openCategoryPanel()">
+      <span class="settings-label">
+        <strong>Categorias</strong>
+        <span>Adicionar, editar nomes e trocar ícones</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">☷</span>
+    </button>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="categoryPanel" hidden onclick="handleCategoryBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="categoryTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="categoryTitle">Categorias</div>
+      <button class="settings-close" type="button" onclick="closeCategoryPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <div class="category-manager">
+      <form class="category-create" onsubmit="addCategory(event)">
+        <input class="field category-icon-input" id="newCategoryIcon" type="text" value="🛒" maxlength="4" aria-label="Ícone">
+        <input class="field" id="newCategoryName" type="text" placeholder="Nova categoria" required>
+        <button class="category-save" type="submit" title="Adicionar categoria" aria-label="Adicionar categoria">＋</button>
+      </form>
+
+      <div class="category-panel-status" id="categoryPanelStatus"></div>
+      <div class="category-list" id="categoryList"></div>
+    </div>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="editPanel" hidden onclick="handleEditBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="editTitle">Editar item</div>
+      <button class="settings-close" type="button" onclick="closeEditPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <form class="edit-form" onsubmit="saveEditedItem(event)">
+      <div class="edit-field-group">
+        <label for="editName">Nome</label>
+        <input class="field" id="editName" type="text" required>
+      </div>
+
+      <div class="edit-field-group">
+        <label for="editCat">Categoria</label>
+        <select class="field" id="editCat" required></select>
+      </div>
+
+      <div class="edit-field-group">
+        <label for="editQty">Quantidade</label>
+        <input class="field" id="editQty" type="number" min="0" step="1" inputmode="numeric" required>
+      </div>
+
+      <div class="edit-actions">
+        <button class="edit-cancel" type="button" onclick="closeEditPanel()">Cancelar</button>
+        <button class="edit-save" type="submit">Salvar</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script>
+const defaultCategoryRecords = [
+  {icon:"🥫", name:"Alimentos"},
+  {icon:"🥬", name:"Hortifruti"},
+  {icon:"🥖", name:"Padaria"},
+  {icon:"🧀", name:"Frios e Laticínios"},
+  {icon:"🥩", name:"Carnes"},
+  {icon:"🐟", name:"Peixaria"},
+  {icon:"🥤", name:"Bebidas"},
+  {icon:"🛒", name:"Mercearia"},
+  {icon:"🧊", name:"Congelados"},
+  {icon:"🧼", name:"Limpeza e Higiene"},
+  {icon:"🧴", name:"Higiene Pessoal"},
+  {icon:"👶", name:"Bebê"},
+  {icon:"🐾", name:"Pet"},
+  {icon:"💊", name:"Farmácia"},
+  {icon:"🍬", name:"Doces"},
+  {icon:"🍿", name:"Snacks"},
+  {icon:"🧂", name:"Temperos"},
+  {icon:"🍅", name:"Molhos e Conservas"},
+  {icon:"🌾", name:"Grãos e Cereais"},
+  {icon:"🥫", name:"Enlatados"},
+  {icon:"☕", name:"Café e Matinais"},
+  {icon:"🍝", name:"Massas"},
+  {icon:"🫒", name:"Óleos e Azeites"},
+  {icon:"🥚", name:"Ovos"},
+  {icon:"🏠", name:"Utilidades"},
+  {icon:"📦", name:"Descartáveis"}
+];
+
+const defaultCategories = defaultCategoryRecords.map(categoryValue);
+
+const requiredItems = [
+  {cat:"🥬 Hortifruti", name:"Tomate", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Cebola", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Alho", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Batata", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Limão", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Cenoura", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Beterraba", qty:1, done:false}
+];
+
+const storageKey = "smartlist_final";
+const backupStorageKey = "smartlist_final_backup";
+const lastSavedKey = "smartlist_last_saved";
+const themeStorageKey = "lista_facil_theme";
+const categoryStorageKey = "lista_facil_categories";
+const syncEndpoint = "/.netlify/functions/sync-list";
+const initialItemDate = "1970-01-01T00:00:00.000Z";
+let syncTimer;
+let isApplyingRemoteSync = false;
+let isSyncing = false;
+let editingItemIndex = null;
+const collapsedCategories = new Set();
+
+function cleanCategoryName(name){
+  return String(name || "").replace(/\s+/g, " ").trim();
+}
+
+function categoryValue(category){
+  const icon = String(category.icon || "🛒").trim() || "🛒";
+  const name = cleanCategoryName(category.name || "Categoria");
+  return `${icon} ${name}`;
+}
+
+function parseCategory(cat){
+  const clean = String(cat || "").trim();
+  const spaceIndex = clean.indexOf(" ");
+
+  if(spaceIndex > 0){
+    return {
+      icon: clean.slice(0, spaceIndex),
+      name: cleanCategoryName(clean.slice(spaceIndex + 1))
+    };
+  }
+
+  return {icon:"🛒", name:cleanCategoryName(clean || "Categoria")};
+}
+
+function categoryKey(name){
+  return cleanCategoryName(name)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function loadCategoryRecords(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(categoryStorageKey) || "[]");
+    return Array.isArray(saved) ? saved.map(parseCategoryRecord).filter(Boolean) : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function parseCategoryRecord(record){
+  if(!record){
+    return null;
+  }
+
+  if(typeof record === "string"){
+    return parseCategory(record);
+  }
+
+  const parsed = {
+    icon: String(record.icon || "🛒").trim() || "🛒",
+    name: cleanCategoryName(record.name)
+  };
+
+  return parsed.name ? parsed : null;
+}
+
+function uniqueCategoryRecords(records){
+  const byName = new Map();
+
+  records.forEach((record)=>{
+    const parsed = parseCategoryRecord(record);
+
+    if(parsed){
+      byName.set(categoryKey(parsed.name), parsed);
+    }
+  });
+
+  return [...byName.values()].sort((a,b)=>sortText(a.name,b.name));
+}
+
+let categoryRecords = uniqueCategoryRecords([
+  ...defaultCategoryRecords,
+  ...loadCategoryRecords()
+]);
+
+function loadItems(){
+  try {
+    return JSON.parse(localStorage.getItem(storageKey)) ||
+      JSON.parse(localStorage.getItem(backupStorageKey)) ||
+      [];
+  } catch(error) {
+    return [];
+  }
+}
+
+let items = loadItems();
+
+/* LISTA INICIAL */
+if(items.length === 0){
+  items = [
+    // 🥫 Alimentos
+    {cat:"🥫 Alimentos", name:"Café", qty:3, done:false},
+    {cat:"🥫 Alimentos", name:"Arroz", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Óleo", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Óleo de Canola", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Vinagre", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Leite em pó", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Leite", qty:12, done:false},
+    {cat:"🥫 Alimentos", name:"Extrato de tomate 1 kg", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Creme de leite", qty:8, done:false},
+    {cat:"🥫 Alimentos", name:"Milho", qty:3, done:false},
+    {cat:"🥫 Alimentos", name:"Sal", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Macarrão", qty:6, done:false},
+    {cat:"🥫 Alimentos", name:"Flocão de milho", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Tapioca", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Alho", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Margarina", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Nescau", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Bolacha", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Suco", qty:10, done:false},
+    {cat:"🥫 Alimentos", name:"Sardinha", qty:1, done:false},
+
+    // 🥬 Hortifruti
+    {cat:"🥬 Hortifruti", name:"Tomate", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Cebola", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Alho", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Batata", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Limão", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Cenoura", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Beterraba", qty:1, done:false},
+
+    // 🥖 Padaria
+    {cat:"🥖 Padaria", name:"Pão de forma", qty:1, done:false},
+    {cat:"🥖 Padaria", name:"Pão de hambúrguer", qty:1, done:false},
+
+    // 🧀 Frios
+    {cat:"🧀 Frios e Laticínios", name:"Muçarela", qty:1, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Presunto", qty:1, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Bacon", qty:1, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Iogurte", qty:2, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Calabresa", qty:1, done:false},
+
+    // 🧼 Limpeza
+    {cat:"🧼 Limpeza e Higiene", name:"Papel higiênico", qty:2, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabonete", qty:10, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabão em pó", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabão líquido", qty:2, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Bom Bril", qty:3, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Amaciante", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Desinfetante", qty:2, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Água sanitária", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Detergente", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Veja", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabonete líquido", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Palito de dente", qty:1, done:false}
+  ];
+
+  save();
+}
+
+function saveLocal(savedAt = localStorage.getItem(lastSavedKey) || new Date().toISOString()){
+  const payload = JSON.stringify(items);
+  localStorage.setItem(storageKey, payload);
+  localStorage.setItem(backupStorageKey, payload);
+  localStorage.setItem(lastSavedKey, savedAt);
+}
+
+function save(savedAt = new Date().toISOString()){
+  saveLocal(savedAt);
+  if(!isApplyingRemoteSync){
+    queueRemoteSync(savedAt);
+  }
+}
+
+function canSyncRemote(){
+  return location.protocol === "https:" || location.hostname === "localhost";
+}
+
+function queueRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
+  if(!canSyncRemote()){
+    return;
+  }
+
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => pushRemoteSync(updatedAt), 80);
+}
+
+async function pushRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
+  if(!canSyncRemote() || !navigator.onLine){
+    return;
+  }
+
+  try {
+    const response = await fetch(syncEndpoint, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({items: items.map(normalizeItem), updatedAt})
+    });
+
+    if(!response.ok){
+      const errorText = await response.text().catch(() => "");
+      setSyncStatus(`Não foi possível enviar (${response.status}). ${errorText}`, "error");
+      return;
+    }
+
+    setSyncStatus("Alterações enviadas ao Netlify.", "ok");
+  } catch(error) {
+    setSyncStatus("Falha ao enviar. Verifique se a Function está publicada.", "error");
+  }
+}
+
+function setSyncing(syncing){
+  isSyncing = syncing;
+  const refreshBtn = document.getElementById("syncBtn");
+
+  if(refreshBtn){
+    refreshBtn.classList.toggle("syncing", syncing);
+    refreshBtn.disabled = syncing;
+  }
+}
+
+function isDarkMode(){
+  return document.documentElement.dataset.theme === "dark";
+}
+
+function applyTheme(theme){
+  const dark = theme === "dark";
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+
+  if(themeMeta){
+    themeMeta.setAttribute("content", dark ? "#111217" : "#ff7000");
+  }
+
+  try {
+    localStorage.setItem(themeStorageKey, dark ? "dark" : "light");
+  } catch(error) {}
+
+  updateThemeStatus();
+}
+
+function updateThemeStatus(){
+  const status = document.getElementById("themeStatus");
+
+  if(status){
+    status.textContent = isDarkMode() ? "Ativado" : "Desativado";
+  }
+}
+
+function toggleDarkMode(){
+  applyTheme(isDarkMode() ? "light" : "dark");
+}
+
+function openSettings(){
+  const panel = document.getElementById("settingsPanel");
+
+  if(panel){
+    updateThemeStatus();
+    panel.hidden = false;
+  }
+}
+
+function closeSettings(){
+  const panel = document.getElementById("settingsPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handleSettingsBackdrop(event){
+  if(event.target.id === "settingsPanel"){
+    closeSettings();
+  }
+}
+
+function startNewPurchaseFromSettings(){
+  resetDoneItems();
+  closeSettings();
+}
+
+function openCategoryPanel(){
+  closeSettings();
+  renderCategoryManager();
+  setCategoryPanelStatus("");
+
+  const panel = document.getElementById("categoryPanel");
+
+  if(panel){
+    panel.hidden = false;
+  }
+}
+
+function setCategoryPanelStatus(message, type = ""){
+  const status = document.getElementById("categoryPanelStatus");
+
+  if(status){
+    status.textContent = message;
+    status.className = `category-panel-status ${type}`.trim();
+  }
+}
+
+function closeCategoryPanel(){
+  const panel = document.getElementById("categoryPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handleCategoryBackdrop(event){
+  if(event.target.id === "categoryPanel"){
+    closeCategoryPanel();
+  }
+}
+
+function renderCategoryManager(){
+  const list = document.getElementById("categoryList");
+
+  if(!list){
+    return;
+  }
+
+  const records = getAllCategoryRecords();
+
+  list.innerHTML = records.map((record,index)=>`
+    <div class="category-row">
+      <input class="field category-icon-input" id="categoryIcon${index}" value="${escapeHTML(record.icon)}" maxlength="4" aria-label="Ícone de ${escapeHTML(record.name)}">
+      <input class="field" id="categoryName${index}" value="${escapeHTML(record.name)}" aria-label="Nome de ${escapeHTML(record.name)}">
+      <button class="category-save" type="button" onclick="saveCategoryEdit(${index})" title="Salvar categoria" aria-label="Salvar categoria">✓</button>
+      <button class="category-delete" type="button" onclick="deleteCategory(${index})" title="Excluir categoria" aria-label="Excluir categoria">×</button>
+    </div>
+  `).join("");
+}
+
+function addCategory(event){
+  event.preventDefault();
+
+  const iconInput = document.getElementById("newCategoryIcon");
+  const nameInput = document.getElementById("newCategoryName");
+  const icon = String(iconInput.value || "🛒").trim() || "🛒";
+  const name = cleanCategoryName(nameInput.value);
+
+  if(!name){
+    nameInput.focus();
+    return;
+  }
+
+  categoryRecords = uniqueCategoryRecords([
+    ...categoryRecords,
+    {icon, name}
+  ]);
+
+  saveCategoryRecords();
+  populateCategorySelect();
+  renderCategoryManager();
+  render();
+  nameInput.value = "";
+  iconInput.value = "🛒";
+  setCategoryPanelStatus(`Categoria "${name}" adicionada.`, "ok");
+  nameInput.focus();
+}
+
+function saveCategoryEdit(index){
+  const records = getAllCategoryRecords();
+  const current = records[index];
+  const iconInput = document.getElementById(`categoryIcon${index}`);
+  const nameInput = document.getElementById(`categoryName${index}`);
+
+  if(!current || !iconInput || !nameInput){
+    return;
+  }
+
+  const oldKey = categoryKey(current.name);
+  const icon = String(iconInput.value || "🛒").trim() || "🛒";
+  const name = cleanCategoryName(nameInput.value);
+
+  if(!name){
+    nameInput.focus();
+    return;
+  }
+
+  const updated = {icon, name};
+  records[index] = updated;
+  categoryRecords = uniqueCategoryRecords(records);
+
+  items.forEach((item)=>{
+    if(!item.deleted && categoryKey(parseCategory(item.cat).name) === oldKey){
+      item.cat = categoryValue(updated);
+      touchItem(items.indexOf(item));
+    }
+  });
+
+  saveCategoryRecords();
+  save();
+  populateCategorySelect();
+  renderCategoryManager();
+  render();
+  setCategoryPanelStatus(`Categoria "${name}" salva.`, "ok");
+}
+
+function deleteCategory(index){
+  const records = getAllCategoryRecords();
+  const current = records[index];
+
+  if(!current){
+    return;
+  }
+
+  const inUse = items.some((item)=>
+    !item.deleted && categoryKey(parseCategory(item.cat).name) === categoryKey(current.name)
+  );
+
+  if(inUse){
+    setCategoryPanelStatus(`"${current.name}" tem itens vinculados. Mova ou exclua esses itens antes.`, "error");
+    return;
+  }
+
+  categoryRecords = uniqueCategoryRecords(records.filter((_,recordIndex)=>recordIndex !== index));
+  saveCategoryRecords();
+  populateCategorySelect();
+  renderCategoryManager();
+  render();
+  setCategoryPanelStatus(`Categoria "${current.name}" excluída.`, "ok");
+}
+
+function setSyncStatus(message, type = ""){
+  const status = document.getElementById("syncStatus");
+
+  if(!status){
+    return;
+  }
+
+  status.textContent = message;
+  status.className = `sync-status ${type}`.trim();
+}
+
+async function pullRemoteSync({forceRender = false, showStatus = false} = {}){
+  if(!canSyncRemote() || !navigator.onLine){
+    setSyncStatus("Sincronização disponível somente no app publicado online.");
+    return;
+  }
+
+  try {
+    if(showStatus){
+      setSyncing(true);
+    }
+
+    const response = await fetch(syncEndpoint, {cache:"no-store"});
+
+    if(!response.ok){
+      const errorText = await response.text().catch(() => "");
+      setSyncStatus(`Sincronização indisponível (${response.status}). ${errorText}`, "error");
+      return;
+    }
+
+    const remote = await response.json();
+    setSyncStatus("Sincronizado com Netlify.", "ok");
+
+    if(!remote.items || !Array.isArray(remote.items)){
+      await pushRemoteSync();
+      return;
+    }
+
+    const remoteUpdatedAt = Date.parse(remote.updatedAt || 0);
+    const localUpdatedAt = Date.parse(localStorage.getItem(lastSavedKey) || 0);
+
+    const merged = mergeRemoteItems(remote.items);
+
+    if(merged || remoteUpdatedAt > localUpdatedAt){
+      isApplyingRemoteSync = true;
+      saveLocal(remote.updatedAt || new Date().toISOString());
+      isApplyingRemoteSync = false;
+      populateCategorySelect();
+      render();
+      return;
+    }
+
+    if(localUpdatedAt > remoteUpdatedAt){
+      await pushRemoteSync();
+      return;
+    }
+
+    if(forceRender){
+      populateCategorySelect();
+      render();
+    }
+  } catch(error) {
+  } finally {
+    if(showStatus){
+      setSyncing(false);
+    }
+  }
+}
+
+async function manualRefresh(){
+  setSyncStatus("Atualizando...");
+  await pushRemoteSync();
+  await pullRemoteSync({forceRender:true, showStatus:true});
+}
+
+function itemKey(item){
+  return (item.id || `${item.cat}::${item.name}`).toLowerCase();
+}
+
+function mergeRemoteItems(remoteItems){
+  let changed = false;
+  const localByKey = new Map(items.map((item,index)=>[itemKey(item), {item, index}]));
+
+  remoteItems.map(normalizeItem).forEach((remoteItem)=>{
+    const localMatch = localByKey.get(itemKey(remoteItem));
+
+    if(!localMatch){
+      items.push(remoteItem);
+      changed = true;
+      return;
+    }
+
+    const remoteItemUpdatedAt = Date.parse(remoteItem.updatedAt || initialItemDate);
+    const localItemUpdatedAt = Date.parse(localMatch.item.updatedAt || initialItemDate);
+
+    if(remoteItemUpdatedAt > localItemUpdatedAt){
+      items[localMatch.index] = remoteItem;
+      changed = true;
+    }
+  });
+
+  return changed;
+}
+
+function touchItem(i){
+  items[i].updatedAt = new Date().toISOString();
+}
+
+function createItemId(cat,name){
+  return `${cat}::${name}`.trim().toLowerCase();
+}
+
+function normalizeItem(item){
+  const match = item.name.match(/\s*\((\d+)\)\s*$/);
+  const qty = Number(item.qty ?? (match ? match[1] : 1));
+  const name = match ? item.name.replace(/\s*\(\d+\)\s*$/, "") : item.name;
+
+  return {
+    ...item,
+    id: item.id || createItemId(item.cat,name),
+    name,
+    qty: Math.max(0, qty),
+    deleted: Boolean(item.deleted),
+    updatedAt: item.updatedAt || initialItemDate
+  };
+}
+
+items = items.map(normalizeItem);
+
+requiredItems.forEach((requiredItem)=>{
+  const normalizedRequiredItem = normalizeItem(requiredItem);
+  const alreadyExists = items.some((item)=>itemKey(item) === itemKey(normalizedRequiredItem));
+
+  if(!alreadyExists){
+    items.push(normalizedRequiredItem);
+  }
+});
+
+categoryRecords = uniqueCategoryRecords([
+  ...categoryRecords,
+  ...items.filter((it)=>!it.deleted).map((it)=>parseCategory(it.cat))
+]);
+
+saveLocal();
+
+function saveCategoryRecords(){
+  categoryRecords = uniqueCategoryRecords(categoryRecords);
+  localStorage.setItem(categoryStorageKey, JSON.stringify(categoryRecords));
+}
+
+function getAllCategoryRecords(){
+  categoryRecords = uniqueCategoryRecords([
+    ...categoryRecords,
+    ...items.filter((it)=>!it.deleted).map((it)=>parseCategory(it.cat))
+  ]);
+
+  return categoryRecords;
+}
+
+function populateCategorySelect(){
+  const select = document.getElementById("newCat");
+  const categories = getAllCategoryRecords().map(categoryValue);
+
+  select.innerHTML = categories
+    .map((cat)=>`<option value="${cat}">${escapeHTML(categoryDetails(cat).label)}</option>`)
+    .join("");
+}
+
+function categoryOptionsHTML(selectedCat = ""){
+  const categories = getAllCategoryRecords().map(categoryValue);
+
+  return categories
+    .map((cat)=>{
+      const selected = cat === selectedCat ? " selected" : "";
+      return `<option value="${escapeHTML(cat)}"${selected}>${escapeHTML(categoryDetails(cat).label)}</option>`;
+    })
+    .join("");
+}
+
+function toggle(i){
+  items[i].done = !items[i].done;
+  touchItem(i);
+  save();
+  render();
+}
+
+function changeQty(i, amount){
+  items[i].qty = Math.max(0, Number(items[i].qty || 0) + amount);
+  touchItem(i);
+  save();
+  render();
+}
+
+function addItem(event){
+  event.preventDefault();
+
+  const nameInput = document.getElementById("newName");
+  const catSelect = document.getElementById("newCat");
+  const name = nameInput.value.trim();
+
+  if(!name){
+    return;
+  }
+
+  items.push({
+    cat: catSelect.value,
+    id: `${catSelect.value}::${name}::${Date.now()}`.toLowerCase(),
+    name,
+    qty: 1,
+    done: false,
+    updatedAt: new Date().toISOString()
+  });
+
+  save();
+  nameInput.value = "";
+  populateCategorySelect();
+  render();
+}
+
+function editItem(i){
+  const item = items[i];
+  const panel = document.getElementById("editPanel");
+  const nameInput = document.getElementById("editName");
+  const catSelect = document.getElementById("editCat");
+  const qtyInput = document.getElementById("editQty");
+
+  if(!item || item.deleted || !panel || !nameInput || !catSelect || !qtyInput){
+    return;
+  }
+
+  editingItemIndex = i;
+  nameInput.value = item.name;
+  catSelect.innerHTML = categoryOptionsHTML(item.cat);
+  qtyInput.value = Number(item.qty || 0);
+  panel.hidden = false;
+  nameInput.focus();
+  nameInput.select();
+}
+
+function closeEditPanel(){
+  const panel = document.getElementById("editPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+
+  editingItemIndex = null;
+}
+
+function handleEditBackdrop(event){
+  if(event.target.id === "editPanel"){
+    closeEditPanel();
+  }
+}
+
+function saveEditedItem(event){
+  event.preventDefault();
+
+  if(editingItemIndex === null || !items[editingItemIndex]){
+    closeEditPanel();
+    return;
+  }
+
+  const nameInput = document.getElementById("editName");
+  const catSelect = document.getElementById("editCat");
+  const qtyInput = document.getElementById("editQty");
+  const cleanName = nameInput.value.trim();
+  const cleanQty = Math.max(0, Math.floor(Number(qtyInput.value || 0)));
+
+  if(!cleanName){
+    nameInput.focus();
+    return;
+  }
+
+  items[editingItemIndex].name = cleanName;
+  items[editingItemIndex].cat = catSelect.value;
+  items[editingItemIndex].qty = cleanQty;
+  touchItem(editingItemIndex);
+  save();
+  populateCategorySelect();
+  closeEditPanel();
+  render();
+}
+
+function removeItem(i){
+  items[i].deleted = true;
+  touchItem(i);
+  save();
+  render();
+}
+
+function resetDoneItems(){
+  const changedAt = new Date().toISOString();
+  let changed = false;
+
+  items.forEach((item)=>{
+    if(!item.deleted && (item.done || Number(item.qty || 0) !== 0)){
+      item.done = false;
+      item.qty = 0;
+      item.updatedAt = changedAt;
+      changed = true;
+    }
+  });
+
+  if(!changed){
+    setSyncStatus("A compra já está zerada.", "ok");
+    return;
+  }
+
+  save(changedAt);
+  render();
+}
+
+function sortText(a,b){
+  return a.localeCompare(b, "pt-BR", {sensitivity:"base"});
+}
+
+function escapeHTML(value){
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function updateSummary(visibleItems){
+  const totalCount = document.getElementById("totalCount");
+  const doneCount = document.getElementById("doneCount");
+  const progressFill = document.getElementById("progressFill");
+  const progressPercent = document.getElementById("progressPercent");
+  const done = visibleItems.filter((item)=>item.done).length;
+  const percent = visibleItems.length ? Math.round((done / visibleItems.length) * 100) : 0;
+
+  totalCount.textContent = visibleItems.length;
+  doneCount.textContent = done;
+  progressFill.style.width = `${percent}%`;
+  progressPercent.textContent = `${percent}%`;
+}
+
+function categoryDetails(cat){
+  const parsed = parseCategory(cat);
+  const stored = getAllCategoryRecords().find((record)=>categoryKey(record.name) === categoryKey(parsed.name));
+  const lower = cat.toLowerCase();
+  const icon = stored?.icon || parsed.icon || "🛒";
+  const label = stored?.name || parsed.name || cat;
+
+  if(lower.includes("hortifruti")){
+    return {icon, tone:"produce", label};
+  }
+
+  if(lower.includes("padaria")){
+    return {icon, tone:"bakery", label};
+  }
+
+  if(lower.includes("frios") || lower.includes("laticínios")){
+    return {icon, tone:"dairy", label};
+  }
+
+  if(lower.includes("limpeza") || lower.includes("higiene")){
+    return {icon, tone:"clean", label};
+  }
+
+  if(lower.includes("alimentos")){
+    return {icon, tone:"food", label};
+  }
+
+  return {icon, tone:"default", label};
+}
+
+function categoryCountTone(cat){
+  const tone = categoryDetails(cat).tone;
+  const colors = {
+    food: "background:#fff0e4;color:#e45e00",
+    produce: "background:#eaf8e6;color:#2e9d23",
+    bakery: "background:#fff5df;color:#b37515",
+    dairy: "background:#e9f5ff;color:#2878bc",
+    clean: "background:#f2eaff;color:#7040b6",
+    default: "background:#f1f2f6;color:#686b74"
+  };
+
+  return colors[tone] || colors.default;
+}
+
+function formatQty(qty){
+  return qty;
+}
+
+function toggleCategory(encodedCat){
+  const cat = decodeURIComponent(encodedCat);
+
+  if(collapsedCategories.has(cat)){
+    collapsedCategories.delete(cat);
+  } else {
+    collapsedCategories.add(cat);
+  }
+
+  render();
+}
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  const groupedItems = {};
+  const search = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+  const visibleItems = items.filter((it)=>!it.deleted);
+  const filteredItems = visibleItems.filter((it)=>{
+    if(!search){
+      return true;
+    }
+
+    return `${it.name} ${it.cat}`.toLowerCase().includes(search);
+  });
+
+  updateSummary(visibleItems);
+
+  items.forEach((it,i)=>{
+    if(it.deleted){
+      return;
+    }
+
+    if(search && !`${it.name} ${it.cat}`.toLowerCase().includes(search)){
+      return;
+    }
+
+    if(!groupedItems[it.cat]){
+      groupedItems[it.cat] = [];
+    }
+
+    groupedItems[it.cat].push({...it, index:i});
+  });
+
+  if(filteredItems.length === 0){
+    list.innerHTML = `<div class="empty-state">Nenhum item encontrado.</div>`;
+    return;
+  }
+
+  Object.keys(groupedItems).sort(sortText).forEach((cat)=>{
+    const categoryItems = groupedItems[cat].sort((a,b)=>sortText(a.name,b.name));
+    const categoryDone = categoryItems.filter((item)=>item.done).length;
+    const details = categoryDetails(cat);
+    const isCollapsed = collapsedCategories.has(cat);
+    const categoryKey = encodeURIComponent(cat);
+
+    let sectionHTML = `
+      <section class="category-section">
+        <button class="category-header" type="button" onclick="toggleCategory('${categoryKey}')">
+          <div class="category-main">
+            <span class="category-icon ${details.tone}">${details.icon}</span>
+            <span class="category-meta">
+              <span class="category">${escapeHTML(details.label)}</span>
+              <span class="category-count" style="${categoryCountTone(cat)}">${categoryItems.length}</span>
+            </span>
+          </div>
+          <span class="category-toggle" aria-hidden="true">${isCollapsed ? "⌄" : "⌃"}</span>
+        </button>
+    `;
+
+    if(!isCollapsed){
+      categoryItems.forEach((it)=>{
+        sectionHTML += `
+          <div class="item ${it.done ? 'item-done' : ''}">
+            <div class="item-left" onclick="toggle(${it.index})">
+              <span class="check-dot">${it.done ? "✓" : ""}</span>
+              <div class="item-name ${it.done ? 'done' : ''}">${escapeHTML(it.name)}</div>
+            </div>
+
+            <div class="actions">
+              <div class="qty-control">
+                <button class="qty-btn" type="button" onclick="changeQty(${it.index}, -1)" aria-label="Diminuir quantidade">-</button>
+                <span class="qty-value">${formatQty(it.qty)}</span>
+                <button class="qty-btn" type="button" onclick="changeQty(${it.index}, 1)" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <button class="small-btn" type="button" onclick="editItem(${it.index})" title="Editar" aria-label="Editar">⋮</button>
+              <button class="small-btn danger" type="button" onclick="removeItem(${it.index})" title="Excluir" aria-label="Excluir">×</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    sectionHTML += `</section>`;
+    list.innerHTML += sectionHTML;
+  });
+}
+
+populateCategorySelect();
+render();
+pullRemoteSync();
+
+setInterval(() => {
+  if(document.visibilityState === "visible"){
+    pullRemoteSync();
+  }
+}, 1200);
+
+window.addEventListener("pagehide", () => pushRemoteSync());
+window.addEventListener("beforeunload", () => pushRemoteSync());
+window.addEventListener("online", pullRemoteSync);
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "hidden"){
+    pushRemoteSync();
+  } else {
+    pullRemoteSync();
+  }
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then((registration) => {
+        registration.update();
+
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+
+          if(!newWorker){
+            return;
+          }
+
+          newWorker.addEventListener("statechange", () => {
+            if(newWorker.state === "installed" && navigator.serviceWorker.controller){
+              newWorker.postMessage({type:"SKIP_WAITING"});
+            }
+          });
+        });
+      })
+      .catch(() => {});
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(sessionStorage.getItem("smartlist_reloaded_for_update") === "1"){
+      return;
+    }
+
+    sessionStorage.setItem("smartlist_reloaded_for_update", "1");
+    window.location.reload();
+  });
+}
+</script>
+
+</body>
+</html>

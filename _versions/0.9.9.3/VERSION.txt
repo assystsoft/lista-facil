@@ -1,0 +1,14 @@
+Version: 0.9.9.3
+Saved at: 2026-07-05
+Published: no
+Production URL: https://ilistafacil.netlify.app remains unchanged until requested.
+Notes:
+- Added functional local login/signup with account session in localStorage.
+- Added Google and Apple ID local test login flows.
+- Added per-account plan state for Premium, Plus and Família.
+- Added local plan activation for testing without real payment.
+- Premium unlocks history/share features.
+- Plus unlocks named multiple lists and custom themes.
+- Família unlocks family member invites on top of Plus features.
+- Added account panel and plan tools panel.
+- Existing list data format and main shopping list behavior preserved.

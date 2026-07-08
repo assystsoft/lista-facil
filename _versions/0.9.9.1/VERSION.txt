@@ -1,0 +1,9 @@
+Version: 0.9.9.1
+Saved at: 2026-07-05
+Published: no
+Production URL: https://ilistafacil.netlify.app remains unchanged until requested.
+Notes:
+- Refined provisional login screen with lighter visual hierarchy.
+- Added email and password form fields.
+- Added Google and Apple ID sign-in buttons as provisional actions.
+- Login actions currently enter the app without real authentication.

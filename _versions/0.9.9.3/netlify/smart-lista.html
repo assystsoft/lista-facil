@@ -1,0 +1,4068 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lista Fácil</title>
+<meta name="theme-color" content="#ff7000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Lista Fácil">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="smart-lista-icon-180.png">
+<link rel="icon" href="smart-lista-icon-192.png">
+<script>
+try {
+  if(localStorage.getItem("lista_facil_theme") === "dark"){
+    document.documentElement.dataset.theme = "dark";
+  }
+} catch(error) {}
+</script>
+
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f8f8fa;
+  --surface: #ffffff;
+  --surface-soft: #f1f1f5;
+  --ink: #101118;
+  --muted: #858893;
+  --line: #e8e9ee;
+  --brand: #ff6a00;
+  --brand-dark: #e85d00;
+  --brand-soft: #fff0e4;
+  --success: #52b82e;
+  --success-soft: #eaf8e6;
+  --danger: #d63230;
+  --shadow: 0 14px 34px rgba(23, 25, 31, 0.08);
+  --shadow-soft: 0 8px 20px rgba(23, 25, 31, 0.07);
+  --radius: 18px;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #111217;
+  --surface: #1b1c23;
+  --surface-soft: #262832;
+  --ink: #f4f5f8;
+  --muted: #a5a8b3;
+  --line: #333640;
+  --brand-soft: #3a2618;
+  --shadow: 0 14px 34px rgba(0, 0, 0, 0.34);
+  --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.26);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 106, 0, 0.08), transparent 280px),
+    radial-gradient(circle at 86% 18%, rgba(16, 17, 24, 0.045), transparent 220px),
+    linear-gradient(180deg, #ffffff 0, var(--bg) 390px);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+body.intro-active {
+  overflow: hidden;
+}
+
+:root[data-theme="dark"] body {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 106, 0, 0.12), transparent 280px),
+    radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.055), transparent 220px),
+    linear-gradient(180deg, #171820 0, var(--bg) 390px);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+button {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  color: inherit;
+  text-align: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.intro-layer {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 106, 0, 0.18), transparent 230px),
+    linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+  display: grid;
+  inset: 0;
+  min-height: 100svh;
+  padding: calc(26px + env(safe-area-inset-top)) 24px calc(24px + env(safe-area-inset-bottom));
+  place-items: center;
+  position: fixed;
+  transition: opacity 360ms ease, visibility 360ms ease;
+  z-index: 50;
+}
+
+:root[data-theme="dark"] .intro-layer {
+  background:
+    radial-gradient(circle at 50% 20%, rgba(255, 106, 0, 0.2), transparent 230px),
+    linear-gradient(180deg, #171820 0%, var(--bg) 100%);
+}
+
+.intro-layer.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.intro-stage {
+  align-items: center;
+  display: grid;
+  gap: 20px;
+  justify-items: center;
+  width: min(360px, 100%);
+}
+
+.splash-view,
+.login-view {
+  align-items: center;
+  display: grid;
+  gap: 18px;
+  justify-items: center;
+  transition: opacity 320ms ease, transform 320ms ease, visibility 320ms ease;
+  width: 100%;
+}
+
+.splash-view.is-hidden,
+.login-view.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  transform: translateY(12px);
+  visibility: hidden;
+}
+
+.splash-logo-wrap {
+  animation: splashFloat 1800ms ease-in-out infinite;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.splash-logo-wrap::before {
+  animation: splashPulse 1600ms ease-in-out infinite;
+  background: rgba(255, 106, 0, 0.2);
+  border-radius: 32px;
+  content: "";
+  inset: -14px;
+  position: absolute;
+}
+
+.splash-logo,
+.login-logo {
+  border-radius: 28px;
+  box-shadow: 0 24px 44px rgba(255, 106, 0, 0.24);
+  position: relative;
+}
+
+.splash-logo {
+  height: 104px;
+  width: 104px;
+}
+
+.login-logo {
+  border-radius: 22px;
+  height: 64px;
+  width: 64px;
+}
+
+.splash-title {
+  font-size: 30px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+}
+
+.splash-subtitle {
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin: 0;
+  text-align: center;
+}
+
+.splash-loader {
+  background: var(--surface-soft);
+  border-radius: 999px;
+  height: 8px;
+  overflow: hidden;
+  width: 132px;
+}
+
+.splash-loader::before {
+  animation: splashLoad 1300ms ease-in-out infinite;
+  background: linear-gradient(90deg, var(--brand), #ff9a2f);
+  border-radius: inherit;
+  content: "";
+  display: block;
+  height: 100%;
+  width: 48%;
+}
+
+.login-card {
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 18px;
+  padding: 22px 18px;
+  width: 100%;
+}
+
+.login-brand {
+  align-items: center;
+  display: flex;
+  gap: 13px;
+  min-width: 0;
+  width: 100%;
+}
+
+.login-title {
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.login-copy {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.35;
+  margin: 4px 0 0;
+}
+
+.login-form {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.login-field-group {
+  display: grid;
+  gap: 7px;
+}
+
+.login-field-group label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.signup-only {
+  display: none;
+}
+
+.auth-signup .signup-only {
+  display: grid;
+}
+
+.login-field {
+  background: var(--surface-soft);
+  border: 1px solid transparent;
+  border-radius: 16px;
+  color: var(--ink);
+  min-height: 52px;
+  outline: none;
+  padding: 0 15px;
+  width: 100%;
+}
+
+.login-field:focus {
+  background: var(--surface);
+  border-color: rgba(255, 106, 0, 0.42);
+  box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.12);
+}
+
+.login-row {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.login-check {
+  align-items: center;
+  color: var(--muted);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.login-check input {
+  accent-color: var(--brand);
+  height: 16px;
+  width: 16px;
+}
+
+.login-link {
+  background: transparent;
+  border: none;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0;
+  text-align: right;
+}
+
+.login-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 4px;
+  width: 100%;
+}
+
+.login-btn {
+  align-items: center;
+  border: none;
+  border-radius: 17px;
+  display: inline-flex;
+  font-weight: 800;
+  gap: 9px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 52px;
+  padding: 0 18px;
+  text-align: center;
+  width: 100%;
+}
+
+.login-btn.primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  box-shadow: 0 14px 28px rgba(255, 106, 0, 0.28);
+  color: #fff;
+}
+
+.login-btn.secondary {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.login-socials {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  width: 100%;
+}
+
+.login-btn.social {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: none;
+  color: var(--ink);
+  font-size: 14px;
+  min-height: 50px;
+}
+
+.login-divider {
+  align-items: center;
+  color: var(--muted);
+  display: grid;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 10px;
+  grid-template-columns: 1fr auto 1fr;
+  width: 100%;
+}
+
+.login-divider::before,
+.login-divider::after {
+  background: var(--line);
+  content: "";
+  height: 1px;
+}
+
+.login-note {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+  text-align: center;
+}
+
+.login-status {
+  color: var(--danger);
+  font-size: 12px;
+  min-height: 16px;
+  text-align: center;
+}
+
+@keyframes splashFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes splashPulse {
+  0%, 100% {
+    opacity: 0.38;
+    transform: scale(0.92);
+  }
+
+  50% {
+    opacity: 0.14;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes splashLoad {
+  0% {
+    transform: translateX(-110%);
+  }
+
+  100% {
+    transform: translateX(220%);
+  }
+}
+
+.app-shell {
+  width: min(560px, 100%);
+  margin: 0 auto;
+  padding-bottom: calc(92px + env(safe-area-inset-bottom));
+}
+
+.hero {
+  padding: calc(20px + env(safe-area-inset-top)) 16px 12px;
+}
+
+.hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.app-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 17px;
+  box-shadow: 0 10px 24px rgba(255, 106, 0, 0.16);
+}
+
+.title-group {
+  min-width: 0;
+}
+
+.eyebrow {
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0;
+  margin-top: 3px;
+}
+
+h1 {
+  font-size: 28px;
+  line-height: 1.08;
+  margin: 0;
+}
+
+.icon-btn {
+  border: none;
+  display: grid;
+  flex: 0 0 auto;
+  line-height: 1;
+  padding: 0;
+  place-items: center;
+  text-align: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 17px;
+  background: #15161b;
+  color: white;
+  box-shadow: var(--shadow-soft);
+  font-size: 21px;
+}
+
+:root[data-theme="dark"] #settingsBtn {
+  background: #ffffff;
+  color: #101118;
+}
+
+.soft-icon-btn {
+  background: #f0f0f4;
+  color: var(--ink);
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .soft-icon-btn {
+  background: #262832;
+}
+
+.progress-card {
+  background: var(--surface);
+  border: 1px solid rgba(16, 17, 24, 0.06);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 17px 16px 16px;
+}
+
+.progress-area {
+  align-items: start;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 86px;
+  margin-top: 18px;
+}
+
+.progress-head {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.progress-title {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.progress-count {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.progress-row {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 44px;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.progress-track {
+  background: #e8e9ee;
+  border-radius: 999px;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, var(--brand), #ff8b1a);
+  border-radius: inherit;
+  height: 100%;
+  transition: width 180ms ease;
+  width: 0%;
+}
+
+.progress-percent {
+  color: var(--brand);
+  font-size: 16px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.container {
+  padding: 0 16px;
+}
+
+.toolbar {
+  display: grid;
+  gap: 10px;
+  margin: 2px 0 14px;
+}
+
+.search-bar,
+.add-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-wrap::before {
+  content: "⌕";
+  color: #7e828c;
+  font-size: 26px;
+  left: 17px;
+  line-height: 1;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-54%);
+  z-index: 1;
+}
+
+.search-wrap .field {
+  padding-left: 48px;
+}
+
+.add-form {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) minmax(146px, 0.52fr) 48px;
+  background: rgba(255,255,255,0.74);
+  border: 1px solid rgba(16, 17, 24, 0.05);
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: 0 7px 16px rgba(23, 25, 31, 0.04);
+}
+
+.new-purchase-box {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  display: grid;
+  height: 100%;
+  padding: 0;
+  place-items: center;
+  width: 86px;
+}
+
+.new-purchase-box .add-btn {
+  border-radius: var(--radius);
+  display: grid;
+  font-size: 22px;
+  height: 86px;
+  line-height: 1;
+  min-height: 86px;
+  padding: 0;
+  place-items: center;
+  text-align: center;
+  width: 86px;
+}
+
+.field {
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  background: var(--surface-soft);
+  border: 1px solid transparent;
+  border-radius: 15px;
+  color: var(--ink);
+  font-size: 15px;
+  outline: none;
+  padding: 12px 15px;
+}
+
+.field:focus {
+  background: var(--surface);
+  border-color: rgba(255, 106, 0, 0.44);
+  box-shadow: 0 0 0 4px rgba(255, 106, 0, 0.12);
+}
+
+select.field {
+  border-radius: 15px;
+  height: 50px;
+  min-height: 50px;
+  overflow: hidden;
+  padding-left: 11px;
+  padding-right: 24px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.floating-add {
+  background: transparent;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  display: grid;
+  left: 50%;
+  place-items: center;
+  pointer-events: none;
+  position: fixed;
+  transform: translateX(-50%);
+  width: min(560px, 100%);
+  z-index: 5;
+}
+
+.floating-add .reset-btn {
+  align-items: center;
+  backdrop-filter: blur(18px);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  display: inline-flex;
+  gap: 8px;
+  justify-content: center;
+  min-height: 56px;
+  max-width: 260px;
+  pointer-events: auto;
+  width: min(100%, 260px);
+}
+
+.add-btn,
+.reset-btn,
+.small-btn,
+.qty-btn {
+  border: none;
+  font-weight: 800;
+}
+
+.add-btn {
+  min-height: 58px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+  border-radius: 17px;
+  box-shadow: 0 12px 26px rgba(255, 106, 0, 0.27);
+  font-size: 16px;
+  padding: 0 16px;
+}
+
+.reset-btn {
+  min-height: 58px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 17px;
+  color: var(--ink);
+  font-size: 16px;
+  padding: 0 14px;
+  box-shadow: 0 8px 18px rgba(23, 25, 31, 0.05);
+}
+
+.icon-btn.syncing,
+.reset-btn.syncing,
+.add-btn.syncing {
+  opacity: 0.55;
+}
+
+.sync-status {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.25;
+  margin-top: 5px;
+  min-height: 14px;
+  padding: 0;
+}
+
+.sync-status.error {
+  color: var(--danger);
+}
+
+.sync-status.ok {
+  color: var(--brand);
+}
+
+.list-sections {
+  display: grid;
+  gap: 8px;
+}
+
+.category-section {
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  border: 1px solid rgba(16, 17, 24, 0.07);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.category-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: none;
+  color: var(--ink);
+  padding: 10px 12px;
+  text-align: left;
+  width: 100%;
+}
+
+.category-main {
+  align-items: center;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+.category-icon {
+  display: grid;
+  flex: 0 0 auto;
+  font-size: 24px;
+  height: 42px;
+  place-items: center;
+  width: 42px;
+  border-radius: 13px;
+}
+
+.category-icon.food { background: #fff0e4; color: #e45e00; }
+.category-icon.produce { background: #eaf8e6; color: #2e9d23; }
+.category-icon.bakery { background: #fff5df; color: #b37515; }
+.category-icon.dairy { background: #e9f5ff; color: #2878bc; }
+.category-icon.clean { background: #f2eaff; color: #7040b6; }
+.category-icon.default { background: #f1f2f6; color: #686b74; }
+
+.category-meta {
+  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, auto) auto;
+  gap: 8px;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+.category {
+  color: var(--ink);
+  display: block;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.14;
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: normal;
+  text-align: left;
+  word-break: normal;
+}
+
+.category-count {
+  display: grid;
+  flex: 0 0 auto;
+  min-height: 24px;
+  min-width: 24px;
+  place-items: center;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 8px;
+  text-align: center;
+}
+
+.category-toggle {
+  background: transparent;
+  border: none;
+  color: var(--ink);
+  display: grid;
+  font-size: 24px;
+  height: 36px;
+  justify-self: end;
+  line-height: 1;
+  place-items: center;
+  text-align: center;
+  width: 36px;
+}
+
+.item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px;
+  align-items: center;
+  min-height: 48px;
+  padding: 6px 11px 6px 14px;
+  border-top: 1px solid var(--line);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item-done {
+  background: linear-gradient(90deg, rgba(82,184,46,0.12), transparent);
+}
+
+.item-left {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  align-items: center;
+  gap: 13px;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.check-dot {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  background: var(--surface);
+  border: 2px solid #c8ccd5;
+  border-radius: 7px;
+  color: white;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.item-done .check-dot {
+  background: var(--success);
+  border-color: var(--success);
+}
+
+.item-name {
+  font-size: 16px;
+  line-height: 1.25;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.done {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+}
+
+.qty-control {
+  display: inline-grid;
+  grid-template-columns: 22px minmax(32px, auto) 22px;
+  align-items: center;
+  height: 28px;
+  background: var(--brand-soft);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.qty-btn {
+  display: grid;
+  width: 22px;
+  height: 28px;
+  background: transparent;
+  color: var(--brand);
+  font-size: 14px;
+  line-height: 1;
+  place-items: center;
+  padding: 0;
+  text-align: center;
+}
+
+.qty-value {
+  min-width: 32px;
+  padding: 0 2px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--brand);
+  white-space: nowrap;
+}
+
+.small-btn {
+  display: grid;
+  width: 26px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border-radius: 10px;
+  color: #7f828b;
+  font-size: 18px;
+  line-height: 1;
+  place-items: center;
+  text-align: center;
+}
+
+.small-btn.danger {
+  background: transparent;
+  color: var(--danger);
+}
+
+.empty-state {
+  color: var(--muted);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+}
+
+.settings-backdrop {
+  align-items: end;
+  background: rgba(9, 10, 14, 0.34);
+  display: grid;
+  inset: 0;
+  padding: 18px;
+  position: fixed;
+  z-index: 20;
+}
+
+.settings-backdrop[hidden] {
+  display: none;
+}
+
+.settings-sheet {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+  margin: 0 auto;
+  max-width: 520px;
+  padding: 18px;
+  width: 100%;
+}
+
+.add-item-sheet .add-form {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  grid-template-columns: minmax(0, 1fr) minmax(132px, 0.72fr) 50px;
+  padding: 4px 0 0;
+}
+
+.settings-head,
+.settings-option {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.settings-head {
+  margin-bottom: 10px;
+}
+
+.settings-title {
+  font-size: 21px;
+  font-weight: 900;
+}
+
+.settings-close {
+  background: var(--surface-soft);
+  border: none;
+  border-radius: 14px;
+  color: var(--ink);
+  display: grid;
+  height: 42px;
+  line-height: 1;
+  place-items: center;
+  padding: 0;
+  text-align: center;
+  width: 42px;
+}
+
+.settings-option {
+  background: transparent;
+  border: none;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  padding: 16px 2px;
+  text-align: left;
+  width: 100%;
+}
+
+.settings-option:first-of-type {
+  border-top: none;
+}
+
+.settings-label {
+  display: grid;
+  gap: 3px;
+}
+
+.settings-label strong {
+  font-size: 17px;
+}
+
+.settings-label span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.settings-label .plan-pill {
+  color: var(--brand);
+  font-weight: 800;
+}
+
+.switch {
+  background: var(--line);
+  border-radius: 999px;
+  flex: 0 0 auto;
+  height: 30px;
+  padding: 3px;
+  width: 52px;
+}
+
+.switch-thumb {
+  background: white;
+  border-radius: 999px;
+  display: block;
+  height: 24px;
+  transition: transform 160ms ease;
+  width: 24px;
+}
+
+:root[data-theme="dark"] .switch {
+  background: var(--brand);
+}
+
+:root[data-theme="dark"] .switch-thumb {
+  transform: translateX(22px);
+}
+
+.settings-action {
+  color: var(--brand);
+  flex: 0 0 auto;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.settings-action.brand-action {
+  background: var(--brand-soft);
+  border-radius: 14px;
+  display: grid;
+  height: 42px;
+  place-items: center;
+  width: 42px;
+}
+
+.premium-sheet {
+  max-height: min(760px, calc(100svh - 36px));
+  overflow: auto;
+}
+
+.premium-intro {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 14px;
+}
+
+.premium-kicker {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.premium-intro p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.plan-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.plan-card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.plan-card.current {
+  border-color: rgba(255, 106, 0, 0.34);
+  box-shadow: 0 10px 22px rgba(255, 106, 0, 0.1);
+}
+
+.plan-head {
+  align-items: start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.plan-name {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.plan-price {
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.plan-features {
+  color: var(--muted);
+  display: grid;
+  font-size: 13px;
+  gap: 5px;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0;
+}
+
+.plan-features li {
+  list-style: none;
+}
+
+.plan-features li::before {
+  color: var(--brand);
+  content: "✓ ";
+  font-weight: 900;
+}
+
+.plan-actions {
+  display: grid;
+  gap: 8px;
+}
+
+.plan-btn {
+  align-items: center;
+  border: none;
+  border-radius: 15px;
+  display: inline-flex;
+  font-size: 14px;
+  font-weight: 900;
+  justify-content: center;
+  min-height: 46px;
+  padding: 0 14px;
+  text-align: center;
+}
+
+.plan-btn.primary {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+}
+
+.plan-btn.secondary {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.partner-block {
+  background: var(--brand-soft);
+  border: 1px solid rgba(255, 106, 0, 0.18);
+  border-radius: 18px;
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 14px;
+}
+
+.partner-block strong {
+  font-size: 16px;
+}
+
+.partner-block p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0;
+}
+
+.premium-message {
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 700;
+  min-height: 18px;
+  text-align: center;
+}
+
+.premium-tools {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.tool-card {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+}
+
+.tool-card strong {
+  font-size: 15px;
+}
+
+.tool-card span,
+.account-card span,
+.history-row span,
+.family-row span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.account-card {
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 14px;
+}
+
+.account-card strong {
+  font-size: 16px;
+}
+
+.compact-form {
+  display: grid;
+  gap: 10px;
+}
+
+.compact-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.history-list,
+.family-list,
+.named-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(42vh, 360px);
+  overflow: auto;
+}
+
+.history-row,
+.family-row,
+.named-list-row {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 10px;
+}
+
+.history-row strong,
+.family-row strong,
+.named-list-row strong {
+  font-size: 14px;
+}
+
+.mini-actions {
+  display: inline-flex;
+  gap: 6px;
+}
+
+.mini-btn {
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 800;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0 10px;
+  text-align: center;
+}
+
+.mini-btn.primary {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: white;
+}
+
+.theme-swatches {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.theme-swatch {
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  height: 44px;
+}
+
+.theme-swatch.active {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.16);
+}
+
+.offers-slot {
+  display: grid;
+  gap: 8px;
+  margin: 0 0 12px;
+}
+
+.offer-card {
+  background: var(--surface);
+  border: 1px solid rgba(255, 106, 0, 0.16);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+}
+
+.offer-card strong {
+  font-size: 15px;
+}
+
+.offer-card span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.edit-form {
+  display: grid;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.edit-field-group {
+  display: grid;
+  gap: 6px;
+}
+
+.edit-field-group label {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.edit-field-group .field {
+  min-height: 52px;
+}
+
+.edit-actions {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding-top: 6px;
+}
+
+.edit-cancel,
+.edit-save {
+  align-items: center;
+  border: none;
+  border-radius: 17px;
+  display: inline-flex;
+  font-weight: 900;
+  justify-content: center;
+  line-height: 1;
+  min-height: 54px;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.edit-cancel {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+.edit-save {
+  background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+  color: white;
+}
+
+.category-manager {
+  display: grid;
+  gap: 14px;
+}
+
+.category-create {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 68px minmax(0, 1fr) 54px;
+}
+
+.category-list {
+  display: grid;
+  gap: 8px;
+  max-height: min(48vh, 440px);
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.category-panel-status {
+  color: var(--muted);
+  font-size: 12px;
+  min-height: 16px;
+}
+
+.category-panel-status.error {
+  color: var(--danger);
+}
+
+.category-panel-status.ok {
+  color: var(--brand);
+}
+
+.category-row {
+  align-items: center;
+  background: var(--surface-soft);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 54px minmax(0, 1fr) 44px 44px;
+  padding: 8px;
+}
+
+.category-row .field {
+  min-height: 44px;
+  padding: 8px 10px;
+}
+
+.category-icon-input {
+  font-size: 24px;
+  height: 44px;
+  line-height: 1;
+  padding: 0;
+  text-align: center;
+}
+
+.category-row .category-icon-input {
+  padding: 0;
+}
+
+.category-save {
+  background: #15161b;
+  border: none;
+  border-radius: 14px;
+  color: white;
+  display: grid;
+  font-size: 20px;
+  font-weight: 900;
+  height: 44px;
+  line-height: 1;
+  place-items: center;
+  padding: 0;
+  text-align: center;
+  width: 44px;
+}
+
+.category-delete {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  border: none;
+  border-radius: 14px;
+  color: var(--danger);
+  display: grid;
+  font-size: 22px;
+  font-weight: 900;
+  height: 44px;
+  line-height: 1;
+  place-items: center;
+  padding: 0;
+  text-align: center;
+  width: 44px;
+}
+
+:root[data-theme="dark"] .category-save {
+  background: var(--brand);
+}
+
+@media (max-width: 520px) {
+  h1 {
+    font-size: 27px;
+  }
+
+  .hero {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .item {
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding-left: 14px;
+  }
+
+  .actions {
+    gap: 2px;
+  }
+
+  .reset-btn,
+  .add-btn {
+    font-size: 15px;
+    padding: 0 10px;
+  }
+
+  .add-form {
+    grid-template-columns: minmax(112px, 1fr) minmax(128px, 0.68fr) 48px;
+  }
+}
+</style>
+</head>
+
+<body class="intro-active">
+
+<div class="intro-layer" id="introLayer" aria-live="polite">
+  <div class="intro-stage">
+    <section class="splash-view" id="splashView" aria-label="Carregando Lista Fácil">
+      <div class="splash-logo-wrap">
+        <img class="splash-logo" src="smart-lista-icon-180.png" alt="">
+      </div>
+      <div>
+        <div class="splash-title">Lista Fácil</div>
+        <p class="splash-subtitle">Preparando sua lista de compras</p>
+      </div>
+      <div class="splash-loader" aria-hidden="true"></div>
+    </section>
+
+    <section class="login-view is-hidden" id="loginView" aria-label="Entrar no Lista Fácil">
+      <div class="login-card">
+        <div class="login-brand">
+          <img class="login-logo" src="smart-lista-icon-180.png" alt="">
+          <div>
+            <h2 class="login-title" id="authTitle">Entrar</h2>
+            <p class="login-copy" id="authCopy">Acesse sua lista e continue suas compras.</p>
+          </div>
+        </div>
+
+        <form class="login-form" onsubmit="handleLogin(event)">
+          <div class="login-field-group signup-only">
+            <label for="loginName">Nome</label>
+            <input class="login-field" id="loginName" type="text" placeholder="Seu nome" autocomplete="name">
+          </div>
+
+          <div class="login-field-group">
+            <label for="loginEmail">E-mail</label>
+            <input class="login-field" id="loginEmail" type="email" placeholder="voce@email.com" autocomplete="email" required>
+          </div>
+
+          <div class="login-field-group">
+            <label for="loginPassword">Senha</label>
+            <input class="login-field" id="loginPassword" type="password" placeholder="Sua senha" autocomplete="current-password" required>
+          </div>
+
+          <div class="login-row">
+            <label class="login-check">
+              <input type="checkbox" id="loginRemember">
+              <span>Lembrar</span>
+            </label>
+            <button class="login-link" type="button">Esqueci a senha</button>
+          </div>
+
+          <button class="login-btn primary" id="authSubmitBtn" type="submit">Entrar</button>
+        </form>
+
+        <div class="login-divider"><span>ou</span></div>
+
+        <div class="login-socials">
+          <button class="login-btn social" type="button" onclick="handleSocialLogin('Google')">G Google</button>
+          <button class="login-btn social" type="button" onclick="handleSocialLogin('Apple ID')"> Apple ID</button>
+        </div>
+
+        <div class="login-actions">
+          <button class="login-btn secondary" type="button" onclick="enterApp()">Continuar sem login</button>
+          <button class="login-link" type="button" onclick="toggleAuthMode()">Criar conta</button>
+        </div>
+
+        <div class="login-status" id="loginStatus"></div>
+        <p class="login-note">Login local de teste. Seus dados ficam salvos neste aparelho.</p>
+      </div>
+    </section>
+  </div>
+</div>
+
+<main class="app-shell">
+<header class="hero">
+  <div class="hero-top">
+    <div class="brand">
+      <img class="app-icon" src="smart-lista-icon-180.png" alt="">
+      <div class="title-group">
+        <h1>Lista Fácil</h1>
+        <div class="eyebrow">Sua lista de compras</div>
+        <div class="sync-status" id="syncStatus">Sincronização aguardando conexão.</div>
+      </div>
+    </div>
+    <button class="icon-btn" id="settingsBtn" type="button" onclick="openSettings()" title="Configurações" aria-label="Configurações">⚙</button>
+  </div>
+
+  <div class="progress-area">
+    <div class="progress-card" aria-live="polite">
+      <div class="progress-head">
+        <div class="progress-title">Progresso da compra</div>
+        <div class="progress-count"><span id="doneCount">0</span> de <span id="totalCount">0</span> itens</div>
+      </div>
+      <div class="progress-row">
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-percent" id="progressPercent">0%</div>
+      </div>
+    </div>
+    <div class="new-purchase-box">
+      <button class="add-btn" type="button" onclick="resetDoneItems()" title="Nova compra" aria-label="Nova compra">↻</button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+<div class="toolbar">
+  <div class="search-bar">
+    <div class="search-wrap">
+	    <input class="field" id="searchInput" type="search" placeholder="Buscar produto..." oninput="render()">
+    </div>
+    <button class="icon-btn soft-icon-btn" type="button" onclick="document.getElementById('searchInput').focus()" title="Buscar" aria-label="Buscar">☷</button>
+  </div>
+  <form class="add-bar add-form" onsubmit="addItem(event)">
+    <input class="field" id="newName" type="text" placeholder="Novo item" required>
+    <select class="field" id="newCat" aria-label="Categoria"></select>
+    <button class="icon-btn" type="submit" title="Adicionar" aria-label="Adicionar">＋</button>
+  </form>
+</div>
+
+<div class="offers-slot" id="partnerOffersSlot" hidden></div>
+<div class="list-sections" id="list"></div>
+</div>
+</main>
+
+<div class="floating-add">
+  <button class="reset-btn" type="button" onclick="openAddPanel()">⊕ Adicionar item</button>
+</div>
+
+<div class="settings-backdrop" id="addPanel" hidden onclick="handleAddBackdrop(event)">
+  <section class="settings-sheet add-item-sheet" role="dialog" aria-modal="true" aria-labelledby="addTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="addTitle">Adicionar item</div>
+      <button class="settings-close" type="button" onclick="closeAddPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <form class="add-bar add-form" onsubmit="addPopupItem(event)">
+      <input class="field" id="popupNewName" type="text" placeholder="Novo item" required>
+      <select class="field" id="popupNewCat" aria-label="Categoria"></select>
+      <button class="icon-btn" type="submit" title="Adicionar" aria-label="Adicionar">＋</button>
+    </form>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="settingsPanel" hidden onclick="handleSettingsBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="settingsTitle">Configurações</div>
+      <button class="settings-close" type="button" onclick="closeSettings()" aria-label="Fechar">×</button>
+    </div>
+
+    <button class="settings-option" type="button" onclick="toggleDarkMode()">
+      <span class="settings-label">
+        <strong>Modo escuro</strong>
+        <span id="themeStatus">Desativado</span>
+      </span>
+      <span class="switch" aria-hidden="true"><span class="switch-thumb"></span></span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="openAccountPanel()">
+      <span class="settings-label">
+        <strong>Conta</strong>
+        <span id="accountStatusLabel">Usando sem login</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">◎</span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="startNewPurchaseFromSettings()">
+      <span class="settings-label">
+        <strong>Nova compra</strong>
+        <span>Desmarca os itens concluídos</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">↻</span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="openCategoryPanel()">
+      <span class="settings-label">
+        <strong>Categorias</strong>
+        <span>Adicionar, editar nomes e trocar ícones</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">☷</span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="openPremiumPanel()">
+      <span class="settings-label">
+        <strong>Lista Fácil Premium</strong>
+        <span>Plano atual: <span class="plan-pill" id="currentPlanLabel">Gratuito</span></span>
+      </span>
+      <span class="settings-action brand-action" aria-hidden="true">★</span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="shareShoppingList()">
+      <span class="settings-label">
+        <strong>Compartilhar lista</strong>
+        <span>Exportar para WhatsApp ou compartilhar pelo celular</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">↗</span>
+    </button>
+
+    <button class="settings-option" type="button" onclick="openPlanToolsPanel()">
+      <span class="settings-label">
+        <strong>Recursos do plano</strong>
+        <span>Histórico, listas, família e temas</span>
+      </span>
+      <span class="settings-action" aria-hidden="true">＋</span>
+    </button>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="accountPanel" hidden onclick="handleAccountBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="accountTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="accountTitle">Conta</div>
+      <button class="settings-close" type="button" onclick="closeAccountPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <div class="account-card" id="accountDetails"></div>
+    <button class="plan-btn secondary" type="button" onclick="logoutAccount()">Sair da conta</button>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="premiumPanel" hidden onclick="handlePremiumBackdrop(event)">
+  <section class="settings-sheet premium-sheet" role="dialog" aria-modal="true" aria-labelledby="premiumTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="premiumTitle">Lista Fácil Premium</div>
+      <button class="settings-close" type="button" onclick="closePremiumPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <div class="premium-intro">
+      <span class="premium-kicker">Monetização preparada</span>
+      <p>Você continua usando o plano gratuito normalmente. Os planos abaixo estão prontos para teste visual e interesse, sem pagamento real nesta etapa.</p>
+    </div>
+
+    <div class="plan-grid" id="planGrid"></div>
+
+    <div class="premium-tools" id="premiumToolsPreview"></div>
+
+    <div class="partner-block">
+      <strong>Você tem um mercado?</strong>
+      <p>Receba listas de compras dos seus clientes pelo WhatsApp e prepare pedidos com mais rapidez.</p>
+      <button class="plan-btn primary" type="button" onclick="registerPartnerMarket()">Quero cadastrar meu mercado</button>
+    </div>
+
+    <div class="premium-message" id="premiumMessage" role="status"></div>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="planToolsPanel" hidden onclick="handlePlanToolsBackdrop(event)">
+  <section class="settings-sheet premium-sheet" role="dialog" aria-modal="true" aria-labelledby="planToolsTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="planToolsTitle">Recursos do plano</div>
+      <button class="settings-close" type="button" onclick="closePlanToolsPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <div class="premium-intro">
+      <span class="premium-kicker" id="planToolsKicker">Plano gratuito</span>
+      <p id="planToolsCopy">Ative Premium, Plus ou Família para testar os recursos pagos.</p>
+    </div>
+
+    <div class="premium-tools">
+      <div class="tool-card" id="historyTool">
+        <strong>Histórico de compras</strong>
+        <span>Veja compras salvas quando você usa Nova compra.</span>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div class="tool-card" id="listsTool">
+        <strong>Listas ilimitadas</strong>
+        <span>Crie e alterne entre listas locais.</span>
+        <form class="compact-form" onsubmit="createNamedList(event)">
+          <div class="compact-row">
+            <input class="field" id="newListName" type="text" placeholder="Nome da lista">
+            <button class="mini-btn primary" type="submit">Criar</button>
+          </div>
+        </form>
+        <div class="named-list" id="namedLists"></div>
+      </div>
+
+      <div class="tool-card" id="familyTool">
+        <strong>Família</strong>
+        <span>Adicione familiares e gere convite local de teste.</span>
+        <form class="compact-form" onsubmit="addFamilyMember(event)">
+          <div class="compact-row">
+            <input class="field" id="familyEmail" type="email" placeholder="email@familia.com">
+            <button class="mini-btn primary" type="submit">Convidar</button>
+          </div>
+        </form>
+        <div class="family-list" id="familyMembers"></div>
+      </div>
+
+      <div class="tool-card" id="themesTool">
+        <strong>Temas personalizados</strong>
+        <span>Troque o tom principal do app.</span>
+        <div class="theme-swatches" id="themeSwatches"></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="categoryPanel" hidden onclick="handleCategoryBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="categoryTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="categoryTitle">Categorias</div>
+      <button class="settings-close" type="button" onclick="closeCategoryPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <div class="category-manager">
+      <form class="category-create" onsubmit="addCategory(event)">
+        <input class="field category-icon-input" id="newCategoryIcon" type="text" value="🛒" maxlength="4" aria-label="Ícone">
+        <input class="field" id="newCategoryName" type="text" placeholder="Nova categoria" required>
+        <button class="category-save" type="submit" title="Adicionar categoria" aria-label="Adicionar categoria">＋</button>
+      </form>
+
+      <div class="category-panel-status" id="categoryPanelStatus"></div>
+      <div class="category-list" id="categoryList"></div>
+    </div>
+  </section>
+</div>
+
+<div class="settings-backdrop" id="editPanel" hidden onclick="handleEditBackdrop(event)">
+  <section class="settings-sheet" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+    <div class="settings-head">
+      <div class="settings-title" id="editTitle">Editar item</div>
+      <button class="settings-close" type="button" onclick="closeEditPanel()" aria-label="Fechar">×</button>
+    </div>
+
+    <form class="edit-form" onsubmit="saveEditedItem(event)">
+      <div class="edit-field-group">
+        <label for="editName">Nome</label>
+        <input class="field" id="editName" type="text" required>
+      </div>
+
+      <div class="edit-field-group">
+        <label for="editCat">Categoria</label>
+        <select class="field" id="editCat" required></select>
+      </div>
+
+      <div class="edit-field-group">
+        <label for="editQty">Quantidade</label>
+        <input class="field" id="editQty" type="number" min="0" step="1" inputmode="numeric" required>
+      </div>
+
+      <div class="edit-actions">
+        <button class="edit-cancel" type="button" onclick="closeEditPanel()">Cancelar</button>
+        <button class="edit-save" type="submit">Salvar</button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script>
+const defaultCategoryRecords = [
+  {icon:"🥫", name:"Alimentos"},
+  {icon:"🥬", name:"Hortifruti"},
+  {icon:"🥖", name:"Padaria"},
+  {icon:"🧀", name:"Frios e Laticínios"},
+  {icon:"🥩", name:"Carnes"},
+  {icon:"🐟", name:"Peixaria"},
+  {icon:"🥤", name:"Bebidas"},
+  {icon:"🛒", name:"Mercearia"},
+  {icon:"🧊", name:"Congelados"},
+  {icon:"🧼", name:"Limpeza e Higiene"},
+  {icon:"🧴", name:"Higiene Pessoal"},
+  {icon:"👶", name:"Bebê"},
+  {icon:"🐾", name:"Pet"},
+  {icon:"💊", name:"Farmácia"},
+  {icon:"🍬", name:"Doces"},
+  {icon:"🍿", name:"Snacks"},
+  {icon:"🧂", name:"Temperos"},
+  {icon:"🍅", name:"Molhos e Conservas"},
+  {icon:"🌾", name:"Grãos e Cereais"},
+  {icon:"🥫", name:"Enlatados"},
+  {icon:"☕", name:"Café e Matinais"},
+  {icon:"🍝", name:"Massas"},
+  {icon:"🫒", name:"Óleos e Azeites"},
+  {icon:"🥚", name:"Ovos"},
+  {icon:"🏠", name:"Utilidades"},
+  {icon:"📦", name:"Descartáveis"}
+];
+
+const defaultCategories = defaultCategoryRecords.map(categoryValue);
+
+const requiredItems = [
+  {cat:"🥬 Hortifruti", name:"Tomate", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Cebola", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Alho", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Batata", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Limão", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Cenoura", qty:1, done:false},
+  {cat:"🥬 Hortifruti", name:"Beterraba", qty:1, done:false}
+];
+
+const storageKey = "smartlist_final";
+const backupStorageKey = "smartlist_final_backup";
+const lastSavedKey = "smartlist_last_saved";
+const themeStorageKey = "lista_facil_theme";
+const categoryStorageKey = "lista_facil_categories";
+const planStorageKey = "lista_facil_current_plan";
+const purchaseHistoryStorageKey = "lista_facil_purchase_history";
+const authAccountsStorageKey = "lista_facil_accounts";
+const authSessionStorageKey = "lista_facil_session";
+const namedListsStorageKey = "lista_facil_named_lists";
+const activeNamedListStorageKey = "lista_facil_active_named_list";
+const familyMembersStorageKey = "lista_facil_family_members";
+const customThemeStorageKey = "lista_facil_custom_theme";
+const syncEndpoint = "/.netlify/functions/sync-list";
+const initialItemDate = "1970-01-01T00:00:00.000Z";
+let syncTimer;
+let isApplyingRemoteSync = false;
+let isSyncing = false;
+let editingItemIndex = null;
+const collapsedCategories = new Set();
+
+// Monetization foundation: isolated flags and storage so existing list data remains compatible.
+const featureFlags = {
+  premiumModal: true,
+  whatsappExport: true,
+  purchaseHistory: true,
+  partnerOffers: false,
+  familySharing: false,
+  paymentIntegration: false
+};
+
+const plans = {
+  free: {
+    name: "Gratuito",
+    price: "R$ 0",
+    cta: "Plano atual",
+    features: [
+      "Lista de compras principal",
+      "Categorias e quantidades",
+      "Modo escuro",
+      "Sincronização quando disponível"
+    ]
+  },
+  premium: {
+    name: "Premium",
+    price: "R$ 4,90/mês",
+    cta: "Ativar Premium",
+    features: [
+      "Histórico de compras",
+      "Exportar lista para WhatsApp",
+      "Backup em nuvem",
+      "Sem anúncios"
+    ]
+  },
+  plus: {
+    name: "Plus",
+    price: "R$ 9,90/mês",
+    cta: "Ativar Plus",
+    features: [
+      "Tudo do Premium",
+      "Listas ilimitadas",
+      "Temas personalizados",
+      "Histórico avançado",
+      "Backup local por conta"
+    ]
+  },
+  family: {
+    name: "Família",
+    price: "R$ 6,90/mês",
+    cta: "Ativar Família",
+    features: [
+      "Tudo do Plus",
+      "Lista compartilhada com familiares",
+      "Atualização em tempo real",
+      "Histórico mensal",
+      "Compras por casa/família"
+    ]
+  },
+  business: {
+    name: "Mercado Parceiro",
+    price: "Sob consulta",
+    cta: "Sou um mercado",
+    features: [
+      "Receber listas de clientes pelo WhatsApp",
+      "Destaque dentro do app",
+      "Página personalizada do mercado",
+      "Botão de pedido rápido"
+    ]
+  }
+};
+
+const partnerOffers = [];
+const customThemes = [
+  {key:"orange", color:"#ff6a00", dark:"#e85d00"},
+  {key:"green", color:"#20a464", dark:"#168350"},
+  {key:"blue", color:"#1f7ae0", dark:"#155fb3"},
+  {key:"pink", color:"#d82f7d", dark:"#ad2364"}
+];
+let authMode = "login";
+let accounts = loadAccounts();
+let currentUser = loadCurrentUser();
+let currentPlan = loadCurrentPlan();
+let purchaseHistory = loadPurchaseHistory();
+let namedLists = loadNamedLists();
+let activeNamedListId = loadActiveNamedListId();
+let familyMembers = loadFamilyMembers();
+
+function showLoginIntro(){
+  const splashView = document.getElementById("splashView");
+  const loginView = document.getElementById("loginView");
+
+  if(splashView && loginView){
+    splashView.classList.add("is-hidden");
+    loginView.classList.remove("is-hidden");
+  }
+}
+
+function enterApp(){
+  const introLayer = document.getElementById("introLayer");
+
+  document.body.classList.remove("intro-active");
+
+  if(introLayer){
+    introLayer.classList.add("is-hidden");
+    window.setTimeout(() => {
+      introLayer.hidden = true;
+    }, 380);
+  }
+}
+
+function handleLogin(event){
+  event.preventDefault();
+  const email = cleanEmail(document.getElementById("loginEmail")?.value);
+  const password = document.getElementById("loginPassword")?.value || "";
+  const name = cleanCategoryName(document.getElementById("loginName")?.value);
+
+  if(authMode === "signup"){
+    createAccount({email, password, name});
+    return;
+  }
+
+  loginAccount(email, password);
+}
+
+function handleSocialLogin(provider){
+  const email = `${provider.toLowerCase().replace(/\s+/g, "")}@lista-facil.local`;
+  const existingAccount = accounts.find((account)=>account.email === email);
+
+  if(existingAccount){
+    setCurrentUser(existingAccount.id);
+  } else {
+    const account = {
+      id: `user-${Date.now()}`,
+      name: provider,
+      email,
+      password: "",
+      provider,
+      plan: "free",
+      createdAt: new Date().toISOString()
+    };
+
+    accounts.push(account);
+    saveAccounts();
+    setCurrentUser(account.id);
+  }
+
+  enterApp();
+}
+
+function cleanEmail(email){
+  return String(email || "").trim().toLowerCase();
+}
+
+function setLoginStatus(message, type = "error"){
+  const status = document.getElementById("loginStatus");
+
+  if(status){
+    status.textContent = message;
+    status.style.color = type === "ok" ? "var(--brand)" : "var(--danger)";
+  }
+}
+
+function toggleAuthMode(){
+  authMode = authMode === "login" ? "signup" : "login";
+  const loginView = document.getElementById("loginView");
+  const title = document.getElementById("authTitle");
+  const copy = document.getElementById("authCopy");
+  const submit = document.getElementById("authSubmitBtn");
+  const toggle = document.querySelector(".login-actions .login-link");
+
+  loginView?.classList.toggle("auth-signup", authMode === "signup");
+
+  if(title){
+    title.textContent = authMode === "signup" ? "Criar conta" : "Entrar";
+  }
+
+  if(copy){
+    copy.textContent = authMode === "signup"
+      ? "Crie sua conta de teste para planos e recursos."
+      : "Acesse sua lista e continue suas compras.";
+  }
+
+  if(submit){
+    submit.textContent = authMode === "signup" ? "Criar conta" : "Entrar";
+  }
+
+  if(toggle){
+    toggle.textContent = authMode === "signup" ? "Já tenho conta" : "Criar conta";
+  }
+
+  setLoginStatus("");
+}
+
+function loadAccounts(){
+  try {
+    const savedAccounts = JSON.parse(localStorage.getItem(authAccountsStorageKey) || "[]");
+    return Array.isArray(savedAccounts) ? savedAccounts : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function saveAccounts(){
+  try {
+    localStorage.setItem(authAccountsStorageKey, JSON.stringify(accounts));
+  } catch(error) {}
+}
+
+function loadCurrentUser(){
+  try {
+    const userId = localStorage.getItem(authSessionStorageKey);
+    return accounts.find((account)=>account.id === userId) || null;
+  } catch(error) {
+    return null;
+  }
+}
+
+function setCurrentUser(userId){
+  currentUser = accounts.find((account)=>account.id === userId) || null;
+
+  try {
+    if(currentUser){
+      localStorage.setItem(authSessionStorageKey, currentUser.id);
+    } else {
+      localStorage.removeItem(authSessionStorageKey);
+    }
+  } catch(error) {}
+
+  currentPlan = currentUser?.plan || loadCurrentPlan();
+  updateCurrentPlanLabel();
+  updateAccountStatusLabel();
+}
+
+function createAccount({email,password,name}){
+  if(!email || !password){
+    setLoginStatus("Informe e-mail e senha para criar a conta.");
+    return;
+  }
+
+  if(accounts.some((account)=>account.email === email)){
+    setLoginStatus("Já existe uma conta com este e-mail.");
+    return;
+  }
+
+  const account = {
+    id: `user-${Date.now()}`,
+    name: name || email.split("@")[0],
+    email,
+    password,
+    provider: "email",
+    plan: "free",
+    createdAt: new Date().toISOString()
+  };
+
+  accounts.push(account);
+  saveAccounts();
+  setCurrentUser(account.id);
+  setLoginStatus("Conta criada.", "ok");
+  enterApp();
+}
+
+function loginAccount(email,password){
+  const account = accounts.find((candidate)=>candidate.email === email && candidate.password === password);
+
+  if(!account){
+    setLoginStatus("Conta não encontrada. Crie uma conta de teste ou confira a senha.");
+    return;
+  }
+
+  setCurrentUser(account.id);
+  setLoginStatus("Login realizado.", "ok");
+  enterApp();
+}
+
+function logoutAccount(){
+  setCurrentUser(null);
+  closeAccountPanel();
+  document.body.classList.add("intro-active");
+  const introLayer = document.getElementById("introLayer");
+  const splashView = document.getElementById("splashView");
+  const loginView = document.getElementById("loginView");
+
+  if(introLayer){
+    introLayer.hidden = false;
+    introLayer.classList.remove("is-hidden");
+  }
+
+  splashView?.classList.add("is-hidden");
+  loginView?.classList.remove("is-hidden");
+}
+
+window.addEventListener("load", () => {
+  window.setTimeout(showLoginIntro, 1450);
+});
+
+function cleanCategoryName(name){
+  return String(name || "").replace(/\s+/g, " ").trim();
+}
+
+function loadCurrentPlan(){
+  if(currentUser?.plan && plans[currentUser.plan]){
+    return currentUser.plan;
+  }
+
+  try {
+    const savedPlan = localStorage.getItem(planStorageKey);
+    return plans[savedPlan] ? savedPlan : "free";
+  } catch(error) {
+    return "free";
+  }
+}
+
+function saveCurrentPlan(planKey){
+  if(!plans[planKey]){
+    return;
+  }
+
+  currentPlan = planKey;
+
+  if(currentUser){
+    currentUser.plan = planKey;
+    accounts = accounts.map((account)=>account.id === currentUser.id ? currentUser : account);
+    saveAccounts();
+  }
+
+  try {
+    localStorage.setItem(planStorageKey, planKey);
+  } catch(error) {}
+
+  updateCurrentPlanLabel();
+  updateAccountStatusLabel();
+  renderPlans();
+  renderPlanTools();
+}
+
+function updateCurrentPlanLabel(){
+  const label = document.getElementById("currentPlanLabel");
+
+  if(label){
+    label.textContent = plans[currentPlan]?.name || plans.free.name;
+  }
+}
+
+function updateAccountStatusLabel(){
+  const label = document.getElementById("accountStatusLabel");
+
+  if(label){
+    label.textContent = currentUser
+      ? `${currentUser.name} • ${plans[currentPlan]?.name || "Gratuito"}`
+      : "Usando sem login";
+  }
+}
+
+function loadPurchaseHistory(){
+  try {
+    const savedHistory = JSON.parse(localStorage.getItem(purchaseHistoryStorageKey) || "[]");
+    return Array.isArray(savedHistory) ? savedHistory : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function savePurchaseHistory(){
+  try {
+    localStorage.setItem(purchaseHistoryStorageKey, JSON.stringify(purchaseHistory));
+  } catch(error) {}
+}
+
+function setPremiumMessage(message){
+  const status = document.getElementById("premiumMessage");
+
+  if(status){
+    status.textContent = message;
+  }
+}
+
+function activatePlan(planKey){
+  const plan = plans[planKey];
+
+  if(!plan){
+    return;
+  }
+
+  saveCurrentPlan(planKey);
+  setPremiumMessage(`Plano ${plan.name} ativado para teste.`);
+}
+
+function registerPartnerMarket(){
+  activatePlan("business");
+}
+
+function planLevel(planKey = currentPlan){
+  const levels = {free:0, premium:1, plus:2, family:3, business:3};
+  return levels[planKey] || 0;
+}
+
+function hasPlan(requiredPlan){
+  return planLevel(currentPlan) >= planLevel(requiredPlan);
+}
+
+function renderPlans(){
+  const grid = document.getElementById("planGrid");
+
+  if(!grid){
+    return;
+  }
+
+  grid.innerHTML = Object.entries(plans).map(([planKey,plan])=>{
+    const isCurrent = planKey === currentPlan;
+    const action = `<button class="plan-btn ${planKey === "free" ? "secondary" : "primary"}" type="button" onclick="activatePlan('${planKey}')">${isCurrent ? "Plano atual" : escapeHTML(plan.cta)}</button>`;
+
+    return `
+      <article class="plan-card ${isCurrent ? "current" : ""}">
+        <div class="plan-head">
+          <div class="plan-name">${escapeHTML(plan.name)}</div>
+          <div class="plan-price">${escapeHTML(plan.price)}</div>
+        </div>
+        <ul class="plan-features">
+          ${plan.features.map((feature)=>`<li>${escapeHTML(feature)}</li>`).join("")}
+        </ul>
+        <div class="plan-actions">${action}</div>
+      </article>
+    `;
+  }).join("");
+
+  renderPremiumToolsPreview();
+}
+
+function openPremiumPanel(){
+  if(!featureFlags.premiumModal){
+    return;
+  }
+
+  closeSettings();
+  updateCurrentPlanLabel();
+  renderPlans();
+  setPremiumMessage("");
+
+  const panel = document.getElementById("premiumPanel");
+
+  if(panel){
+    panel.hidden = false;
+  }
+}
+
+function closePremiumPanel(){
+  const panel = document.getElementById("premiumPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handlePremiumBackdrop(event){
+  if(event.target.id === "premiumPanel"){
+    closePremiumPanel();
+  }
+}
+
+function openAccountPanel(){
+  closeSettings();
+  renderAccountPanel();
+  const panel = document.getElementById("accountPanel");
+
+  if(panel){
+    panel.hidden = false;
+  }
+}
+
+function closeAccountPanel(){
+  const panel = document.getElementById("accountPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handleAccountBackdrop(event){
+  if(event.target.id === "accountPanel"){
+    closeAccountPanel();
+  }
+}
+
+function renderAccountPanel(){
+  const details = document.getElementById("accountDetails");
+
+  if(!details){
+    return;
+  }
+
+  details.innerHTML = currentUser ? `
+    <strong>${escapeHTML(currentUser.name)}</strong>
+    <span>${escapeHTML(currentUser.email)}</span>
+    <span>Plano ativo: ${escapeHTML(plans[currentPlan]?.name || "Gratuito")}</span>
+  ` : `
+    <strong>Sem login</strong>
+    <span>Entre ou crie uma conta na tela inicial para salvar plano por usuário.</span>
+  `;
+}
+
+function openPlanToolsPanel(){
+  closeSettings();
+  renderPlanTools();
+  const panel = document.getElementById("planToolsPanel");
+
+  if(panel){
+    panel.hidden = false;
+  }
+}
+
+function closePlanToolsPanel(){
+  const panel = document.getElementById("planToolsPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handlePlanToolsBackdrop(event){
+  if(event.target.id === "planToolsPanel"){
+    closePlanToolsPanel();
+  }
+}
+
+function renderPremiumToolsPreview(){
+  const preview = document.getElementById("premiumToolsPreview");
+
+  if(!preview){
+    return;
+  }
+
+  preview.innerHTML = `
+    <div class="tool-card">
+      <strong>Recursos ativos no teste</strong>
+      <span>${escapeHTML(planToolsSummary())}</span>
+      <button class="plan-btn secondary" type="button" onclick="openPlanToolsPanel()">Abrir recursos</button>
+    </div>
+  `;
+}
+
+function planToolsSummary(){
+  if(hasPlan("family")){
+    return "Histórico, compartilhamento, listas ilimitadas, família e temas liberados.";
+  }
+
+  if(hasPlan("plus")){
+    return "Histórico, compartilhamento, listas ilimitadas e temas liberados.";
+  }
+
+  if(hasPlan("premium")){
+    return "Histórico e compartilhamento liberados.";
+  }
+
+  return "Ative um plano para liberar os recursos pagos.";
+}
+
+function renderPlanTools(){
+  const kicker = document.getElementById("planToolsKicker");
+  const copy = document.getElementById("planToolsCopy");
+
+  if(kicker){
+    kicker.textContent = `Plano ${plans[currentPlan]?.name || "Gratuito"}`;
+  }
+
+  if(copy){
+    copy.textContent = planToolsSummary();
+  }
+
+  renderHistoryList();
+  renderNamedLists();
+  renderFamilyMembers();
+  renderThemeSwatches();
+}
+
+function setToolLocked(toolId, locked){
+  const tool = document.getElementById(toolId);
+
+  if(tool){
+    tool.style.opacity = locked ? "0.55" : "1";
+    tool.style.pointerEvents = locked ? "none" : "auto";
+  }
+}
+
+function categoryValue(category){
+  const icon = String(category.icon || "🛒").trim() || "🛒";
+  const name = cleanCategoryName(category.name || "Categoria");
+  return `${icon} ${name}`;
+}
+
+function parseCategory(cat){
+  const clean = String(cat || "").trim();
+  const spaceIndex = clean.indexOf(" ");
+
+  if(spaceIndex > 0){
+    return {
+      icon: clean.slice(0, spaceIndex),
+      name: cleanCategoryName(clean.slice(spaceIndex + 1))
+    };
+  }
+
+  return {icon:"🛒", name:cleanCategoryName(clean || "Categoria")};
+}
+
+function categoryKey(name){
+  return cleanCategoryName(name)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function loadCategoryRecords(){
+  try {
+    const saved = JSON.parse(localStorage.getItem(categoryStorageKey) || "[]");
+    return Array.isArray(saved) ? saved.map(parseCategoryRecord).filter(Boolean) : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function parseCategoryRecord(record){
+  if(!record){
+    return null;
+  }
+
+  if(typeof record === "string"){
+    return parseCategory(record);
+  }
+
+  const parsed = {
+    icon: String(record.icon || "🛒").trim() || "🛒",
+    name: cleanCategoryName(record.name)
+  };
+
+  return parsed.name ? parsed : null;
+}
+
+function uniqueCategoryRecords(records){
+  const byName = new Map();
+
+  records.forEach((record)=>{
+    const parsed = parseCategoryRecord(record);
+
+    if(parsed){
+      byName.set(categoryKey(parsed.name), parsed);
+    }
+  });
+
+  return [...byName.values()].sort((a,b)=>sortText(a.name,b.name));
+}
+
+let categoryRecords = uniqueCategoryRecords([
+  ...defaultCategoryRecords,
+  ...loadCategoryRecords()
+]);
+
+function loadItems(){
+  try {
+    return JSON.parse(localStorage.getItem(storageKey)) ||
+      JSON.parse(localStorage.getItem(backupStorageKey)) ||
+      [];
+  } catch(error) {
+    return [];
+  }
+}
+
+let items = loadItems();
+
+/* LISTA INICIAL */
+if(items.length === 0){
+  items = [
+    // 🥫 Alimentos
+    {cat:"🥫 Alimentos", name:"Café", qty:3, done:false},
+    {cat:"🥫 Alimentos", name:"Arroz", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Óleo", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Óleo de Canola", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Vinagre", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Leite em pó", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Leite", qty:12, done:false},
+    {cat:"🥫 Alimentos", name:"Extrato de tomate 1 kg", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Creme de leite", qty:8, done:false},
+    {cat:"🥫 Alimentos", name:"Milho", qty:3, done:false},
+    {cat:"🥫 Alimentos", name:"Sal", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Macarrão", qty:6, done:false},
+    {cat:"🥫 Alimentos", name:"Flocão de milho", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Tapioca", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Alho", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Margarina", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Nescau", qty:2, done:false},
+    {cat:"🥫 Alimentos", name:"Bolacha", qty:1, done:false},
+    {cat:"🥫 Alimentos", name:"Suco", qty:10, done:false},
+    {cat:"🥫 Alimentos", name:"Sardinha", qty:1, done:false},
+
+    // 🥬 Hortifruti
+    {cat:"🥬 Hortifruti", name:"Tomate", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Cebola", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Alho", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Batata", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Limão", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Cenoura", qty:1, done:false},
+    {cat:"🥬 Hortifruti", name:"Beterraba", qty:1, done:false},
+
+    // 🥖 Padaria
+    {cat:"🥖 Padaria", name:"Pão de forma", qty:1, done:false},
+    {cat:"🥖 Padaria", name:"Pão de hambúrguer", qty:1, done:false},
+
+    // 🧀 Frios
+    {cat:"🧀 Frios e Laticínios", name:"Muçarela", qty:1, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Presunto", qty:1, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Bacon", qty:1, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Iogurte", qty:2, done:false},
+    {cat:"🧀 Frios e Laticínios", name:"Calabresa", qty:1, done:false},
+
+    // 🧼 Limpeza
+    {cat:"🧼 Limpeza e Higiene", name:"Papel higiênico", qty:2, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabonete", qty:10, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabão em pó", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabão líquido", qty:2, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Bom Bril", qty:3, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Amaciante", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Desinfetante", qty:2, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Água sanitária", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Detergente", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Veja", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Sabonete líquido", qty:1, done:false},
+    {cat:"🧼 Limpeza e Higiene", name:"Palito de dente", qty:1, done:false}
+  ];
+
+  save();
+}
+
+function saveLocal(savedAt = localStorage.getItem(lastSavedKey) || new Date().toISOString()){
+  const payload = JSON.stringify(items);
+  localStorage.setItem(storageKey, payload);
+  localStorage.setItem(backupStorageKey, payload);
+  localStorage.setItem(lastSavedKey, savedAt);
+}
+
+function save(savedAt = new Date().toISOString()){
+  saveLocal(savedAt);
+  if(!isApplyingRemoteSync){
+    queueRemoteSync(savedAt);
+  }
+}
+
+function canSyncRemote(){
+  return location.protocol === "https:" || location.hostname === "localhost";
+}
+
+function queueRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
+  if(!canSyncRemote()){
+    return;
+  }
+
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(() => pushRemoteSync(updatedAt), 80);
+}
+
+async function pushRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
+  if(!canSyncRemote() || !navigator.onLine){
+    return;
+  }
+
+  try {
+    const response = await fetch(syncEndpoint, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({items: items.map(normalizeItem), updatedAt})
+    });
+
+    if(!response.ok){
+      const errorText = await response.text().catch(() => "");
+      setSyncStatus(`Não foi possível enviar (${response.status}). ${errorText}`, "error");
+      return;
+    }
+
+    setSyncStatus("Alterações enviadas ao Netlify.", "ok");
+  } catch(error) {
+    setSyncStatus("Falha ao enviar. Verifique se a Function está publicada.", "error");
+  }
+}
+
+function setSyncing(syncing){
+  isSyncing = syncing;
+  const refreshBtn = document.querySelector(".new-purchase-box .add-btn");
+
+  if(refreshBtn){
+    refreshBtn.classList.toggle("syncing", syncing);
+    refreshBtn.disabled = syncing;
+  }
+}
+
+function isDarkMode(){
+  return document.documentElement.dataset.theme === "dark";
+}
+
+function applyTheme(theme){
+  const dark = theme === "dark";
+  const themeMeta = document.querySelector('meta[name="theme-color"]');
+
+  document.documentElement.dataset.theme = dark ? "dark" : "light";
+
+  if(themeMeta){
+    themeMeta.setAttribute("content", dark ? "#111217" : "#ff7000");
+  }
+
+  try {
+    localStorage.setItem(themeStorageKey, dark ? "dark" : "light");
+  } catch(error) {}
+
+  updateThemeStatus();
+}
+
+function updateThemeStatus(){
+  const status = document.getElementById("themeStatus");
+
+  if(status){
+    status.textContent = isDarkMode() ? "Ativado" : "Desativado";
+  }
+}
+
+function toggleDarkMode(){
+  applyTheme(isDarkMode() ? "light" : "dark");
+}
+
+function openSettings(){
+  const panel = document.getElementById("settingsPanel");
+
+  if(panel){
+    updateThemeStatus();
+    updateCurrentPlanLabel();
+    updateAccountStatusLabel();
+    panel.hidden = false;
+  }
+}
+
+function closeSettings(){
+  const panel = document.getElementById("settingsPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handleSettingsBackdrop(event){
+  if(event.target.id === "settingsPanel"){
+    closeSettings();
+  }
+}
+
+function openAddPanel(){
+  const panel = document.getElementById("addPanel");
+  const nameInput = document.getElementById("popupNewName");
+
+  if(panel){
+    populateCategorySelect();
+    panel.hidden = false;
+    window.setTimeout(()=>nameInput?.focus(), 80);
+  }
+}
+
+function closeAddPanel(){
+  const panel = document.getElementById("addPanel");
+  const nameInput = document.getElementById("popupNewName");
+
+  if(panel){
+    panel.hidden = true;
+  }
+
+  if(nameInput){
+    nameInput.value = "";
+  }
+}
+
+function handleAddBackdrop(event){
+  if(event.target.id === "addPanel"){
+    closeAddPanel();
+  }
+}
+
+function startNewPurchaseFromSettings(){
+  resetDoneItems();
+  closeSettings();
+}
+
+function openCategoryPanel(){
+  closeSettings();
+  renderCategoryManager();
+  setCategoryPanelStatus("");
+
+  const panel = document.getElementById("categoryPanel");
+
+  if(panel){
+    panel.hidden = false;
+  }
+}
+
+function setCategoryPanelStatus(message, type = ""){
+  const status = document.getElementById("categoryPanelStatus");
+
+  if(status){
+    status.textContent = message;
+    status.className = `category-panel-status ${type}`.trim();
+  }
+}
+
+function closeCategoryPanel(){
+  const panel = document.getElementById("categoryPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+}
+
+function handleCategoryBackdrop(event){
+  if(event.target.id === "categoryPanel"){
+    closeCategoryPanel();
+  }
+}
+
+function renderCategoryManager(){
+  const list = document.getElementById("categoryList");
+
+  if(!list){
+    return;
+  }
+
+  const records = getAllCategoryRecords();
+
+  list.innerHTML = records.map((record,index)=>`
+    <div class="category-row">
+      <input class="field category-icon-input" id="categoryIcon${index}" value="${escapeHTML(record.icon)}" maxlength="4" aria-label="Ícone de ${escapeHTML(record.name)}">
+      <input class="field" id="categoryName${index}" value="${escapeHTML(record.name)}" aria-label="Nome de ${escapeHTML(record.name)}">
+      <button class="category-save" type="button" onclick="saveCategoryEdit(${index})" title="Salvar categoria" aria-label="Salvar categoria">✓</button>
+      <button class="category-delete" type="button" onclick="deleteCategory(${index})" title="Excluir categoria" aria-label="Excluir categoria">×</button>
+    </div>
+  `).join("");
+}
+
+function addCategory(event){
+  event.preventDefault();
+
+  const iconInput = document.getElementById("newCategoryIcon");
+  const nameInput = document.getElementById("newCategoryName");
+  const icon = String(iconInput.value || "🛒").trim() || "🛒";
+  const name = cleanCategoryName(nameInput.value);
+
+  if(!name){
+    nameInput.focus();
+    return;
+  }
+
+  categoryRecords = uniqueCategoryRecords([
+    ...categoryRecords,
+    {icon, name}
+  ]);
+
+  saveCategoryRecords();
+  populateCategorySelect();
+  renderCategoryManager();
+  render();
+  nameInput.value = "";
+  iconInput.value = "🛒";
+  setCategoryPanelStatus(`Categoria "${name}" adicionada.`, "ok");
+  nameInput.focus();
+}
+
+function saveCategoryEdit(index){
+  const records = getAllCategoryRecords();
+  const current = records[index];
+  const iconInput = document.getElementById(`categoryIcon${index}`);
+  const nameInput = document.getElementById(`categoryName${index}`);
+
+  if(!current || !iconInput || !nameInput){
+    return;
+  }
+
+  const oldKey = categoryKey(current.name);
+  const icon = String(iconInput.value || "🛒").trim() || "🛒";
+  const name = cleanCategoryName(nameInput.value);
+
+  if(!name){
+    nameInput.focus();
+    return;
+  }
+
+  const updated = {icon, name};
+  records[index] = updated;
+  categoryRecords = uniqueCategoryRecords(records);
+
+  items.forEach((item)=>{
+    if(!item.deleted && categoryKey(parseCategory(item.cat).name) === oldKey){
+      item.cat = categoryValue(updated);
+      touchItem(items.indexOf(item));
+    }
+  });
+
+  saveCategoryRecords();
+  save();
+  populateCategorySelect();
+  renderCategoryManager();
+  render();
+  setCategoryPanelStatus(`Categoria "${name}" salva.`, "ok");
+}
+
+function deleteCategory(index){
+  const records = getAllCategoryRecords();
+  const current = records[index];
+
+  if(!current){
+    return;
+  }
+
+  const inUse = items.some((item)=>
+    !item.deleted && categoryKey(parseCategory(item.cat).name) === categoryKey(current.name)
+  );
+
+  if(inUse){
+    setCategoryPanelStatus(`"${current.name}" tem itens vinculados. Mova ou exclua esses itens antes.`, "error");
+    return;
+  }
+
+  categoryRecords = uniqueCategoryRecords(records.filter((_,recordIndex)=>recordIndex !== index));
+  saveCategoryRecords();
+  populateCategorySelect();
+  renderCategoryManager();
+  render();
+  setCategoryPanelStatus(`Categoria "${current.name}" excluída.`, "ok");
+}
+
+function setSyncStatus(message, type = ""){
+  const status = document.getElementById("syncStatus");
+
+  if(!status){
+    return;
+  }
+
+  status.textContent = message;
+  status.className = `sync-status ${type}`.trim();
+}
+
+async function pullRemoteSync({forceRender = false, showStatus = false} = {}){
+  if(!canSyncRemote() || !navigator.onLine){
+    setSyncStatus("Sincronização disponível somente no app publicado online.");
+    return;
+  }
+
+  try {
+    if(showStatus){
+      setSyncing(true);
+    }
+
+    const response = await fetch(syncEndpoint, {cache:"no-store"});
+
+    if(!response.ok){
+      const errorText = await response.text().catch(() => "");
+      setSyncStatus(`Sincronização indisponível (${response.status}). ${errorText}`, "error");
+      return;
+    }
+
+    const remote = await response.json();
+    setSyncStatus("Sincronizado com Netlify.", "ok");
+
+    if(!remote.items || !Array.isArray(remote.items)){
+      await pushRemoteSync();
+      return;
+    }
+
+    const remoteUpdatedAt = Date.parse(remote.updatedAt || 0);
+    const localUpdatedAt = Date.parse(localStorage.getItem(lastSavedKey) || 0);
+
+    const merged = mergeRemoteItems(remote.items);
+
+    if(merged || remoteUpdatedAt > localUpdatedAt){
+      isApplyingRemoteSync = true;
+      saveLocal(remote.updatedAt || new Date().toISOString());
+      isApplyingRemoteSync = false;
+      populateCategorySelect();
+      render();
+      return;
+    }
+
+    if(localUpdatedAt > remoteUpdatedAt){
+      await pushRemoteSync();
+      return;
+    }
+
+    if(forceRender){
+      populateCategorySelect();
+      render();
+    }
+  } catch(error) {
+  } finally {
+    if(showStatus){
+      setSyncing(false);
+    }
+  }
+}
+
+async function manualRefresh(){
+  setSyncStatus("Atualizando...");
+  await pushRemoteSync();
+  await pullRemoteSync({forceRender:true, showStatus:true});
+}
+
+function itemKey(item){
+  return (item.id || `${item.cat}::${item.name}`).toLowerCase();
+}
+
+function mergeRemoteItems(remoteItems){
+  let changed = false;
+  const localByKey = new Map(items.map((item,index)=>[itemKey(item), {item, index}]));
+
+  remoteItems.map(normalizeItem).forEach((remoteItem)=>{
+    const localMatch = localByKey.get(itemKey(remoteItem));
+
+    if(!localMatch){
+      items.push(remoteItem);
+      changed = true;
+      return;
+    }
+
+    const remoteItemUpdatedAt = Date.parse(remoteItem.updatedAt || initialItemDate);
+    const localItemUpdatedAt = Date.parse(localMatch.item.updatedAt || initialItemDate);
+
+    if(remoteItemUpdatedAt > localItemUpdatedAt){
+      items[localMatch.index] = remoteItem;
+      changed = true;
+    }
+  });
+
+  return changed;
+}
+
+function touchItem(i){
+  items[i].updatedAt = new Date().toISOString();
+}
+
+function createItemId(cat,name){
+  return `${cat}::${name}`.trim().toLowerCase();
+}
+
+function normalizeItem(item){
+  const match = item.name.match(/\s*\((\d+)\)\s*$/);
+  const qty = Number(item.qty ?? (match ? match[1] : 1));
+  const name = match ? item.name.replace(/\s*\(\d+\)\s*$/, "") : item.name;
+
+  return {
+    ...item,
+    id: item.id || createItemId(item.cat,name),
+    name,
+    qty: Math.max(0, qty),
+    deleted: Boolean(item.deleted),
+    updatedAt: item.updatedAt || initialItemDate
+  };
+}
+
+items = items.map(normalizeItem);
+
+requiredItems.forEach((requiredItem)=>{
+  const normalizedRequiredItem = normalizeItem(requiredItem);
+  const alreadyExists = items.some((item)=>itemKey(item) === itemKey(normalizedRequiredItem));
+
+  if(!alreadyExists){
+    items.push(normalizedRequiredItem);
+  }
+});
+
+categoryRecords = uniqueCategoryRecords([
+  ...categoryRecords,
+  ...items.filter((it)=>!it.deleted).map((it)=>parseCategory(it.cat))
+]);
+
+saveLocal();
+
+function saveCategoryRecords(){
+  categoryRecords = sortCategoryRecords(uniqueCategoryRecords(categoryRecords));
+  localStorage.setItem(categoryStorageKey, JSON.stringify(categoryRecords));
+}
+
+function sortCategoryRecords(records){
+  return [...records].sort((a,b)=>sortText(a.name,b.name));
+}
+
+function getAllCategoryRecords(){
+  categoryRecords = sortCategoryRecords(uniqueCategoryRecords([
+    ...categoryRecords,
+    ...items.filter((it)=>!it.deleted).map((it)=>parseCategory(it.cat))
+  ]));
+
+  return categoryRecords;
+}
+
+function populateCategorySelect(){
+  const categories = getAllCategoryRecords().map(categoryValue);
+  const options = categories
+    .map((cat)=>`<option value="${escapeHTML(cat)}">${escapeHTML(categoryOptionLabel(cat))}</option>`)
+    .join("");
+
+  ["newCat", "popupNewCat"].forEach((id)=>{
+    const select = document.getElementById(id);
+
+    if(!select){
+      return;
+    }
+
+    const currentValue = select.value;
+    select.innerHTML = options;
+
+    if(currentValue && categories.includes(currentValue)){
+      select.value = currentValue;
+    }
+  });
+}
+
+function categoryOptionLabel(cat){
+  const details = categoryDetails(cat);
+  return `${details.icon} ${details.label}`;
+}
+
+function categoryOptionsHTML(selectedCat = ""){
+  const categories = getAllCategoryRecords().map(categoryValue);
+
+  return categories
+    .map((cat)=>{
+      const selected = cat === selectedCat ? " selected" : "";
+      return `<option value="${escapeHTML(cat)}"${selected}>${escapeHTML(categoryOptionLabel(cat))}</option>`;
+    })
+    .join("");
+}
+
+function toggle(i){
+  items[i].done = !items[i].done;
+  touchItem(i);
+  save();
+  render();
+}
+
+function changeQty(i, amount){
+  items[i].qty = Math.max(0, Number(items[i].qty || 0) + amount);
+  touchItem(i);
+  save();
+  render();
+}
+
+function addItem(event){
+  event.preventDefault();
+  addItemFromInputs("newName", "newCat", { focusAfterAdd: true });
+}
+
+function addPopupItem(event){
+  event.preventDefault();
+
+  if(addItemFromInputs("popupNewName", "popupNewCat")){
+    closeAddPanel();
+  }
+}
+
+function addItemFromInputs(nameInputId, catSelectId, options = {}){
+  const nameInput = document.getElementById(nameInputId);
+  const catSelect = document.getElementById(catSelectId);
+
+  if(!nameInput || !catSelect){
+    return false;
+  }
+
+  const name = nameInput.value.trim();
+
+  if(!name){
+    nameInput.focus();
+    return false;
+  }
+
+  items.push({
+    cat: catSelect.value,
+    id: `${catSelect.value}::${name}::${Date.now()}`.toLowerCase(),
+    name,
+    qty: 1,
+    done: false,
+    updatedAt: new Date().toISOString()
+  });
+
+  save();
+  nameInput.value = "";
+  populateCategorySelect();
+  render();
+
+  if(options.focusAfterAdd){
+    nameInput.focus();
+  }
+
+  return true;
+}
+
+function editItem(i){
+  const item = items[i];
+  const panel = document.getElementById("editPanel");
+  const nameInput = document.getElementById("editName");
+  const catSelect = document.getElementById("editCat");
+  const qtyInput = document.getElementById("editQty");
+
+  if(!item || item.deleted || !panel || !nameInput || !catSelect || !qtyInput){
+    return;
+  }
+
+  editingItemIndex = i;
+  nameInput.value = item.name;
+  catSelect.innerHTML = categoryOptionsHTML(item.cat);
+  qtyInput.value = Number(item.qty || 0);
+  panel.hidden = false;
+  nameInput.focus();
+  nameInput.select();
+}
+
+function closeEditPanel(){
+  const panel = document.getElementById("editPanel");
+
+  if(panel){
+    panel.hidden = true;
+  }
+
+  editingItemIndex = null;
+}
+
+function handleEditBackdrop(event){
+  if(event.target.id === "editPanel"){
+    closeEditPanel();
+  }
+}
+
+function saveEditedItem(event){
+  event.preventDefault();
+
+  if(editingItemIndex === null || !items[editingItemIndex]){
+    closeEditPanel();
+    return;
+  }
+
+  const nameInput = document.getElementById("editName");
+  const catSelect = document.getElementById("editCat");
+  const qtyInput = document.getElementById("editQty");
+  const cleanName = nameInput.value.trim();
+  const cleanQty = Math.max(0, Math.floor(Number(qtyInput.value || 0)));
+
+  if(!cleanName){
+    nameInput.focus();
+    return;
+  }
+
+  items[editingItemIndex].name = cleanName;
+  items[editingItemIndex].cat = catSelect.value;
+  items[editingItemIndex].qty = cleanQty;
+  touchItem(editingItemIndex);
+  save();
+  populateCategorySelect();
+  closeEditPanel();
+  render();
+}
+
+function removeItem(i){
+  items[i].deleted = true;
+  touchItem(i);
+  save();
+  render();
+}
+
+function resetDoneItems(){
+  const changedAt = new Date().toISOString();
+  const changed = items.some((item)=>!item.deleted && (item.done || Number(item.qty || 0) !== 0));
+
+  if(!changed){
+    setSyncStatus("A compra já está zerada.", "ok");
+    return;
+  }
+
+  savePurchaseSnapshot();
+
+  items.forEach((item)=>{
+    if(!item.deleted && (item.done || Number(item.qty || 0) !== 0)){
+      item.done = false;
+      item.qty = 0;
+      item.updatedAt = changedAt;
+    }
+  });
+
+  save(changedAt);
+  render();
+}
+
+function sortText(a,b){
+  return a.localeCompare(b, "pt-BR", {sensitivity:"base"});
+}
+
+function escapeHTML(value){
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function formatShareQty(qty){
+  const numericQty = Number(qty || 0);
+  return numericQty > 0 ? ` — ${formatQty(numericQty)}` : "";
+}
+
+function getActiveItems(){
+  return items.filter((item)=>!item.deleted);
+}
+
+function generateShoppingListText(){
+  const activeItems = getActiveItems();
+  const groupedItems = {};
+
+  activeItems.forEach((item)=>{
+    if(!groupedItems[item.cat]){
+      groupedItems[item.cat] = [];
+    }
+
+    groupedItems[item.cat].push(item);
+  });
+
+  const lines = ["🛒 Lista Fácil", ""];
+
+  Object.keys(groupedItems)
+    .sort((a,b)=>sortText(categoryDetails(a).label, categoryDetails(b).label))
+    .forEach((cat)=>{
+      const details = categoryDetails(cat);
+      lines.push(`${details.icon} ${details.label}`);
+
+      groupedItems[cat]
+        .sort((a,b)=>sortText(a.name,b.name))
+        .forEach((item)=>{
+          lines.push(`${item.done ? "☑" : "☐"} ${item.name}${formatShareQty(item.qty)}`);
+        });
+
+      lines.push("");
+    });
+
+  const completedItems = activeItems.filter((item)=>item.done).length;
+  lines.push(`Progresso: ${completedItems} de ${activeItems.length} itens`);
+
+  return lines.join("\n").trim();
+}
+
+async function shareShoppingList(){
+  if(!featureFlags.whatsappExport){
+    return;
+  }
+
+  const text = generateShoppingListText();
+
+  closeSettings();
+
+  try {
+    if(navigator.share){
+      await navigator.share({title:"Lista Fácil", text});
+      return;
+    }
+  } catch(error) {
+    if(error?.name === "AbortError"){
+      return;
+    }
+  }
+
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener");
+}
+
+function savePurchaseSnapshot(){
+  if(!featureFlags.purchaseHistory){
+    return;
+  }
+
+  try {
+    const activeItems = getActiveItems();
+    const now = new Date().toISOString();
+
+    purchaseHistory = [
+      {
+        id: `purchase-${Date.now()}`,
+        date: now,
+        totalItems: activeItems.length,
+        completedItems: activeItems.filter((item)=>item.done).length,
+        items: activeItems.map((item)=>({
+          cat: item.cat,
+          id: item.id,
+          name: item.name,
+          qty: Number(item.qty || 0),
+          done: Boolean(item.done),
+          updatedAt: item.updatedAt || initialItemDate
+        }))
+      },
+      ...purchaseHistory
+    ].slice(0, 24);
+
+    savePurchaseHistory();
+  } catch(error) {}
+}
+
+function renderHistoryList(){
+  const list = document.getElementById("historyList");
+  setToolLocked("historyTool", !hasPlan("premium"));
+
+  if(!list){
+    return;
+  }
+
+  if(!hasPlan("premium")){
+    list.innerHTML = `<div class="empty-state">Ative Premium para ver o histórico.</div>`;
+    return;
+  }
+
+  if(purchaseHistory.length === 0){
+    list.innerHTML = `<div class="empty-state">Use Nova compra para salvar o primeiro histórico.</div>`;
+    return;
+  }
+
+  list.innerHTML = purchaseHistory.map((entry)=>`
+    <div class="history-row">
+      <div>
+        <strong>${new Date(entry.date).toLocaleDateString("pt-BR")}</strong>
+        <span>${entry.completedItems} de ${entry.totalItems} itens comprados</span>
+      </div>
+      <button class="mini-btn" type="button" onclick="restorePurchaseHistory('${entry.id}')">Ver</button>
+    </div>
+  `).join("");
+}
+
+function restorePurchaseHistory(historyId){
+  const entry = purchaseHistory.find((item)=>item.id === historyId);
+
+  if(!entry){
+    return;
+  }
+
+  alert(generateHistoryText(entry));
+}
+
+function generateHistoryText(entry){
+  return [
+    `Compra de ${new Date(entry.date).toLocaleString("pt-BR")}`,
+    `${entry.completedItems} de ${entry.totalItems} itens comprados`,
+    "",
+    ...entry.items.map((item)=>`${item.done ? "☑" : "☐"} ${item.name}${formatShareQty(item.qty)}`)
+  ].join("\n");
+}
+
+function loadNamedLists(){
+  try {
+    const savedLists = JSON.parse(localStorage.getItem(namedListsStorageKey) || "[]");
+    return Array.isArray(savedLists) ? savedLists : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function saveNamedLists(){
+  try {
+    localStorage.setItem(namedListsStorageKey, JSON.stringify(namedLists));
+  } catch(error) {}
+}
+
+function loadActiveNamedListId(){
+  try {
+    return localStorage.getItem(activeNamedListStorageKey) || "";
+  } catch(error) {
+    return "";
+  }
+}
+
+function saveCurrentListIntoActiveSlot(){
+  if(!activeNamedListId){
+    return;
+  }
+
+  namedLists = namedLists.map((list)=>
+    list.id === activeNamedListId
+      ? {...list, items: items.map((item)=>({...item})), updatedAt: new Date().toISOString()}
+      : list
+  );
+  saveNamedLists();
+}
+
+function createNamedList(event){
+  event.preventDefault();
+
+  if(!hasPlan("plus")){
+    return;
+  }
+
+  const input = document.getElementById("newListName");
+  const name = cleanCategoryName(input?.value);
+
+  if(!name){
+    input?.focus();
+    return;
+  }
+
+  saveCurrentListIntoActiveSlot();
+  const id = `list-${Date.now()}`;
+  namedLists = [
+    ...namedLists,
+    {id, name, items: items.map((item)=>({...item})), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString()}
+  ];
+  activeNamedListId = id;
+  localStorage.setItem(activeNamedListStorageKey, id);
+  saveNamedLists();
+  input.value = "";
+  renderNamedLists();
+}
+
+function switchNamedList(listId){
+  if(!hasPlan("plus")){
+    return;
+  }
+
+  const targetList = namedLists.find((list)=>list.id === listId);
+
+  if(!targetList){
+    return;
+  }
+
+  saveCurrentListIntoActiveSlot();
+  activeNamedListId = listId;
+  localStorage.setItem(activeNamedListStorageKey, listId);
+  items = targetList.items.map(normalizeItem);
+  save();
+  render();
+  renderNamedLists();
+}
+
+function deleteNamedList(listId){
+  namedLists = namedLists.filter((list)=>list.id !== listId);
+
+  if(activeNamedListId === listId){
+    activeNamedListId = "";
+    localStorage.removeItem(activeNamedListStorageKey);
+  }
+
+  saveNamedLists();
+  renderNamedLists();
+}
+
+function renderNamedLists(){
+  const list = document.getElementById("namedLists");
+  setToolLocked("listsTool", !hasPlan("plus"));
+
+  if(!list){
+    return;
+  }
+
+  if(!hasPlan("plus")){
+    list.innerHTML = `<div class="empty-state">Ative Plus para usar listas ilimitadas.</div>`;
+    return;
+  }
+
+  if(namedLists.length === 0){
+    list.innerHTML = `<div class="empty-state">Crie uma lista para começar.</div>`;
+    return;
+  }
+
+  list.innerHTML = namedLists.map((namedList)=>`
+    <div class="named-list-row">
+      <div>
+        <strong>${escapeHTML(namedList.name)}</strong>
+        <span>${namedList.id === activeNamedListId ? "Lista ativa" : `${namedList.items.length} itens`}</span>
+      </div>
+      <span class="mini-actions">
+        <button class="mini-btn primary" type="button" onclick="switchNamedList('${namedList.id}')">Abrir</button>
+        <button class="mini-btn" type="button" onclick="deleteNamedList('${namedList.id}')">Excluir</button>
+      </span>
+    </div>
+  `).join("");
+}
+
+function loadFamilyMembers(){
+  try {
+    const savedMembers = JSON.parse(localStorage.getItem(familyMembersStorageKey) || "[]");
+    return Array.isArray(savedMembers) ? savedMembers : [];
+  } catch(error) {
+    return [];
+  }
+}
+
+function saveFamilyMembers(){
+  try {
+    localStorage.setItem(familyMembersStorageKey, JSON.stringify(familyMembers));
+  } catch(error) {}
+}
+
+function addFamilyMember(event){
+  event.preventDefault();
+
+  if(!hasPlan("family")){
+    return;
+  }
+
+  const input = document.getElementById("familyEmail");
+  const email = cleanEmail(input?.value);
+
+  if(!email){
+    input?.focus();
+    return;
+  }
+
+  if(!familyMembers.some((member)=>member.email === email)){
+    familyMembers.push({id:`member-${Date.now()}`, email, status:"Convidado", invitedAt:new Date().toISOString()});
+    saveFamilyMembers();
+  }
+
+  input.value = "";
+  renderFamilyMembers();
+}
+
+function removeFamilyMember(memberId){
+  familyMembers = familyMembers.filter((member)=>member.id !== memberId);
+  saveFamilyMembers();
+  renderFamilyMembers();
+}
+
+function inviteFamilyMember(memberId){
+  const member = familyMembers.find((item)=>item.id === memberId);
+
+  if(!member){
+    return;
+  }
+
+  const message = `Você foi convidado para compartilhar uma lista no Lista Fácil: ${member.email}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener");
+}
+
+function renderFamilyMembers(){
+  const list = document.getElementById("familyMembers");
+  setToolLocked("familyTool", !hasPlan("family"));
+
+  if(!list){
+    return;
+  }
+
+  if(!hasPlan("family")){
+    list.innerHTML = `<div class="empty-state">Ative Família para convidar familiares.</div>`;
+    return;
+  }
+
+  if(familyMembers.length === 0){
+    list.innerHTML = `<div class="empty-state">Nenhum familiar convidado.</div>`;
+    return;
+  }
+
+  list.innerHTML = familyMembers.map((member)=>`
+    <div class="family-row">
+      <div>
+        <strong>${escapeHTML(member.email)}</strong>
+        <span>${escapeHTML(member.status)}</span>
+      </div>
+      <span class="mini-actions">
+        <button class="mini-btn primary" type="button" onclick="inviteFamilyMember('${member.id}')">Enviar</button>
+        <button class="mini-btn" type="button" onclick="removeFamilyMember('${member.id}')">Remover</button>
+      </span>
+    </div>
+  `).join("");
+}
+
+function applyCustomTheme(themeKey){
+  const theme = customThemes.find((item)=>item.key === themeKey) || customThemes[0];
+  document.documentElement.style.setProperty("--brand", theme.color);
+  document.documentElement.style.setProperty("--brand-dark", theme.dark);
+
+  try {
+    localStorage.setItem(customThemeStorageKey, theme.key);
+  } catch(error) {}
+
+  renderThemeSwatches();
+}
+
+function loadCustomTheme(){
+  try {
+    return localStorage.getItem(customThemeStorageKey) || "orange";
+  } catch(error) {
+    return "orange";
+  }
+}
+
+function renderThemeSwatches(){
+  const swatches = document.getElementById("themeSwatches");
+  setToolLocked("themesTool", !hasPlan("plus"));
+
+  if(!swatches){
+    return;
+  }
+
+  if(!hasPlan("plus")){
+    swatches.innerHTML = `<div class="empty-state">Ative Plus para trocar temas.</div>`;
+    return;
+  }
+
+  const activeTheme = loadCustomTheme();
+  swatches.innerHTML = customThemes.map((theme)=>`
+    <button class="theme-swatch ${theme.key === activeTheme ? "active" : ""}" type="button" onclick="applyCustomTheme('${theme.key}')" aria-label="Tema ${theme.key}" style="background:${theme.color}"></button>
+  `).join("");
+}
+
+function renderPartnerOffers(){
+  const slot = document.getElementById("partnerOffersSlot");
+
+  if(!slot){
+    return;
+  }
+
+  if(!featureFlags.partnerOffers || partnerOffers.length === 0){
+    slot.hidden = true;
+    slot.innerHTML = "";
+    return;
+  }
+
+  slot.hidden = false;
+  slot.innerHTML = partnerOffers.map((offer)=>`
+    <article class="offer-card">
+      <strong>${escapeHTML(offer.title || "Oferta parceira")}</strong>
+      <span>${escapeHTML(offer.description || "")}</span>
+    </article>
+  `).join("");
+}
+
+function updateSummary(visibleItems){
+  const totalCount = document.getElementById("totalCount");
+  const doneCount = document.getElementById("doneCount");
+  const progressFill = document.getElementById("progressFill");
+  const progressPercent = document.getElementById("progressPercent");
+  const done = visibleItems.filter((item)=>item.done).length;
+  const percent = visibleItems.length ? Math.round((done / visibleItems.length) * 100) : 0;
+
+  totalCount.textContent = visibleItems.length;
+  doneCount.textContent = done;
+  progressFill.style.width = `${percent}%`;
+  progressPercent.textContent = `${percent}%`;
+}
+
+function categoryDetails(cat){
+  const parsed = parseCategory(cat);
+  const stored = getAllCategoryRecords().find((record)=>categoryKey(record.name) === categoryKey(parsed.name));
+  const lower = cat.toLowerCase();
+  const icon = stored?.icon || parsed.icon || "🛒";
+  const label = stored?.name || parsed.name || cat;
+
+  if(lower.includes("hortifruti")){
+    return {icon, tone:"produce", label};
+  }
+
+  if(lower.includes("padaria")){
+    return {icon, tone:"bakery", label};
+  }
+
+  if(lower.includes("frios") || lower.includes("laticínios")){
+    return {icon, tone:"dairy", label};
+  }
+
+  if(lower.includes("limpeza") || lower.includes("higiene")){
+    return {icon, tone:"clean", label};
+  }
+
+  if(lower.includes("alimentos")){
+    return {icon, tone:"food", label};
+  }
+
+  return {icon, tone:"default", label};
+}
+
+function categoryCountTone(cat){
+  const tone = categoryDetails(cat).tone;
+  const colors = {
+    food: "background:#fff0e4;color:#e45e00",
+    produce: "background:#eaf8e6;color:#2e9d23",
+    bakery: "background:#fff5df;color:#b37515",
+    dairy: "background:#e9f5ff;color:#2878bc",
+    clean: "background:#f2eaff;color:#7040b6",
+    default: "background:#f1f2f6;color:#686b74"
+  };
+
+  return colors[tone] || colors.default;
+}
+
+function formatQty(qty){
+  return qty;
+}
+
+function toggleCategory(encodedCat){
+  const cat = decodeURIComponent(encodedCat);
+
+  if(collapsedCategories.has(cat)){
+    collapsedCategories.delete(cat);
+  } else {
+    collapsedCategories.add(cat);
+  }
+
+  render();
+}
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  renderPartnerOffers();
+
+  const groupedItems = {};
+  const search = (document.getElementById("searchInput")?.value || "").trim().toLowerCase();
+  const visibleItems = items.filter((it)=>!it.deleted);
+  const filteredItems = visibleItems.filter((it)=>{
+    if(!search){
+      return true;
+    }
+
+    return `${it.name} ${it.cat}`.toLowerCase().includes(search);
+  });
+
+  updateSummary(visibleItems);
+
+  items.forEach((it,i)=>{
+    if(it.deleted){
+      return;
+    }
+
+    if(search && !`${it.name} ${it.cat}`.toLowerCase().includes(search)){
+      return;
+    }
+
+    if(!groupedItems[it.cat]){
+      groupedItems[it.cat] = [];
+    }
+
+    groupedItems[it.cat].push({...it, index:i});
+  });
+
+  if(filteredItems.length === 0){
+    list.innerHTML = `<div class="empty-state">Nenhum item encontrado.</div>`;
+    return;
+  }
+
+  Object.keys(groupedItems)
+    .sort((a,b)=>sortText(categoryDetails(a).label, categoryDetails(b).label))
+    .forEach((cat)=>{
+    const categoryItems = groupedItems[cat].sort((a,b)=>sortText(a.name,b.name));
+    const categoryDone = categoryItems.filter((item)=>item.done).length;
+    const details = categoryDetails(cat);
+    const isCollapsed = collapsedCategories.has(cat);
+    const categoryKey = encodeURIComponent(cat);
+
+    let sectionHTML = `
+      <section class="category-section">
+        <button class="category-header" type="button" onclick="toggleCategory('${categoryKey}')">
+          <div class="category-main">
+            <span class="category-icon ${details.tone}">${details.icon}</span>
+            <span class="category-meta">
+              <span class="category">${escapeHTML(details.label)}</span>
+              <span class="category-count" style="${categoryCountTone(cat)}">${categoryItems.length}</span>
+            </span>
+          </div>
+          <span class="category-toggle" aria-hidden="true">${isCollapsed ? "⌄" : "⌃"}</span>
+        </button>
+    `;
+
+    if(!isCollapsed){
+      categoryItems.forEach((it)=>{
+        sectionHTML += `
+          <div class="item ${it.done ? 'item-done' : ''}">
+            <div class="item-left" onclick="toggle(${it.index})">
+              <span class="check-dot">${it.done ? "✓" : ""}</span>
+              <div class="item-name ${it.done ? 'done' : ''}">${escapeHTML(it.name)}</div>
+            </div>
+
+            <div class="actions">
+              <div class="qty-control">
+                <button class="qty-btn" type="button" onclick="changeQty(${it.index}, -1)" aria-label="Diminuir quantidade">-</button>
+                <span class="qty-value">${formatQty(it.qty)}</span>
+                <button class="qty-btn" type="button" onclick="changeQty(${it.index}, 1)" aria-label="Aumentar quantidade">+</button>
+              </div>
+              <button class="small-btn" type="button" onclick="editItem(${it.index})" title="Editar" aria-label="Editar">⋮</button>
+              <button class="small-btn danger" type="button" onclick="removeItem(${it.index})" title="Excluir" aria-label="Excluir">×</button>
+            </div>
+          </div>
+        `;
+      });
+    }
+
+    sectionHTML += `</section>`;
+    list.innerHTML += sectionHTML;
+  });
+}
+
+populateCategorySelect();
+applyCustomTheme(loadCustomTheme());
+updateCurrentPlanLabel();
+updateAccountStatusLabel();
+render();
+pullRemoteSync();
+
+setInterval(() => {
+  if(document.visibilityState === "visible"){
+    pullRemoteSync();
+  }
+}, 1200);
+
+window.addEventListener("pagehide", () => pushRemoteSync());
+window.addEventListener("beforeunload", () => pushRemoteSync());
+window.addEventListener("online", pullRemoteSync);
+document.addEventListener("visibilitychange", () => {
+  if(document.visibilityState === "hidden"){
+    pushRemoteSync();
+  } else {
+    pullRemoteSync();
+  }
+});
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js")
+      .then((registration) => {
+        registration.update();
+
+        registration.addEventListener("updatefound", () => {
+          const newWorker = registration.installing;
+
+          if(!newWorker){
+            return;
+          }
+
+          newWorker.addEventListener("statechange", () => {
+            if(newWorker.state === "installed" && navigator.serviceWorker.controller){
+              newWorker.postMessage({type:"SKIP_WAITING"});
+            }
+          });
+        });
+      })
+      .catch(() => {});
+  });
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    if(sessionStorage.getItem("smartlist_reloaded_for_update") === "1"){
+      return;
+    }
+
+    sessionStorage.setItem("smartlist_reloaded_for_update", "1");
+    window.location.reload();
+  });
+}
+</script>
+
+</body>
+</html>
