@@ -2300,6 +2300,14 @@ async function ensureRemotePrimaryList(){
     return "";
   }
 
+  const {data: userData, error: userError} = await client.auth.getUser();
+  const userId = userData?.user?.id || currentUser.id;
+
+  if(userError || !userId){
+    setSyncStatus(`Sessao Supabase indisponivel. ${userError?.message || "Entre novamente."}`, "error");
+    return "";
+  }
+
   if(remotePrimaryListId){
     return remotePrimaryListId;
   }
@@ -2307,7 +2315,7 @@ async function ensureRemotePrimaryList(){
   const {data: existingList} = await client
     .from("shopping_lists")
     .select("id")
-    .eq("owner_id", currentUser.id)
+    .eq("owner_id", userId)
     .eq("is_primary", true)
     .maybeSingle();
 
@@ -2319,7 +2327,7 @@ async function ensureRemotePrimaryList(){
   const {data: createdList, error} = await client
     .from("shopping_lists")
     .insert({
-      owner_id: currentUser.id,
+      owner_id: userId,
       name: "Lista principal",
       is_primary: true
     })
@@ -2327,7 +2335,19 @@ async function ensureRemotePrimaryList(){
     .single();
 
   if(error){
-    setSyncStatus("Nao foi possivel criar lista no Supabase.", "error");
+    const {data: retryList} = await client
+      .from("shopping_lists")
+      .select("id")
+      .eq("owner_id", userId)
+      .eq("is_primary", true)
+      .maybeSingle();
+
+    if(retryList?.id){
+      remotePrimaryListId = retryList.id;
+      return remotePrimaryListId;
+    }
+
+    setSyncStatus(`Nao foi possivel criar lista no Supabase. ${error.message}`, "error");
     return "";
   }
 
@@ -3021,10 +3041,12 @@ async function pushRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
         return;
       }
 
+      const {data: userData} = await client.auth.getUser();
+      const ownerId = userData?.user?.id || currentUser.id;
       const rows = items.map(normalizeItem).map((item)=>({
         id: item.id,
         list_id: listId,
-        owner_id: currentUser.id,
+        owner_id: ownerId,
         name: item.name,
         category: item.cat,
         quantity: Number(item.qty || 0),
