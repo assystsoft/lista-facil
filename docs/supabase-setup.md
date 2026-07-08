@@ -46,7 +46,16 @@ Depois que o projeto estiver criado, informe ao Codex:
 - Project URL
 - anon public key
 
-Com isso, o app pode trocar o login local por Supabase Auth e sincronizar:
+Esses valores entram no arquivo `smart-lista.html`, no bloco:
+
+```js
+const supabaseConfig = {
+  url: "",
+  anonKey: ""
+};
+```
+
+Com isso, o app usa Supabase Auth e sincroniza:
 
 - lista principal
 - itens

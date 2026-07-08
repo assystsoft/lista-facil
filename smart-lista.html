@@ -1605,6 +1605,7 @@ select.field {
   }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="intro-active">
@@ -1672,7 +1673,7 @@ select.field {
         </div>
 
         <div class="login-status" id="loginStatus"></div>
-        <p class="login-note">Login local de teste. Seus dados ficam salvos neste aparelho.</p>
+        <p class="login-note">Entre para sincronizar na nuvem. Sem login, seus dados ficam neste aparelho.</p>
       </div>
     </section>
   </div>
@@ -2012,11 +2013,17 @@ const activeNamedListStorageKey = "lista_facil_active_named_list";
 const familyMembersStorageKey = "lista_facil_family_members";
 const customThemeStorageKey = "lista_facil_custom_theme";
 const syncEndpoint = "/.netlify/functions/sync-list";
+const supabaseConfig = {
+  url: "",
+  anonKey: ""
+};
 const initialItemDate = "1970-01-01T00:00:00.000Z";
 let syncTimer;
 let isApplyingRemoteSync = false;
 let isSyncing = false;
 let editingItemIndex = null;
+let supabaseClient = null;
+let remotePrimaryListId = "";
 const collapsedCategories = new Set();
 
 // Monetization foundation: isolated flags and storage so existing list data remains compatible.
@@ -2128,7 +2135,7 @@ function enterApp(){
   }
 }
 
-function handleLogin(event){
+async function handleLogin(event){
   event.preventDefault();
   const email = cleanEmail(document.getElementById("loginEmail")?.value);
   const password = document.getElementById("loginPassword")?.value || "";
@@ -2169,6 +2176,163 @@ function handleSocialLogin(provider){
 
 function cleanEmail(email){
   return String(email || "").trim().toLowerCase();
+}
+
+function isSupabaseConfigured(){
+  return Boolean(
+    supabaseConfig.url &&
+    supabaseConfig.anonKey &&
+    window.supabase?.createClient
+  );
+}
+
+function getSupabaseClient(){
+  if(!isSupabaseConfigured()){
+    return null;
+  }
+
+  if(!supabaseClient){
+    supabaseClient = window.supabase.createClient(supabaseConfig.url, supabaseConfig.anonKey);
+  }
+
+  return supabaseClient;
+}
+
+function userFromSupabaseSession(session){
+  const user = session?.user;
+
+  if(!user){
+    return null;
+  }
+
+  return {
+    id: user.id,
+    name: user.user_metadata?.name || user.email?.split("@")[0] || "Usuario",
+    email: user.email || "",
+    provider: "supabase",
+    plan: currentPlan || "free",
+    createdAt: user.created_at || new Date().toISOString()
+  };
+}
+
+async function loadSupabaseSession(){
+  const client = getSupabaseClient();
+
+  if(!client){
+    return;
+  }
+
+  const {data} = await client.auth.getSession();
+  const sessionUser = userFromSupabaseSession(data?.session);
+
+  if(sessionUser){
+    currentUser = sessionUser;
+    currentPlan = await loadRemotePlan();
+    updateCurrentPlanLabel();
+    updateAccountStatusLabel();
+    await ensureRemotePrimaryList();
+    enterApp();
+    await pullRemoteSync({forceRender:true});
+  }
+
+  client.auth.onAuthStateChange(async (_event, session) => {
+    const nextUser = userFromSupabaseSession(session);
+
+    if(!nextUser){
+      currentUser = null;
+      remotePrimaryListId = "";
+      updateAccountStatusLabel();
+      return;
+    }
+
+    currentUser = nextUser;
+    currentPlan = await loadRemotePlan();
+    updateCurrentPlanLabel();
+    updateAccountStatusLabel();
+    await ensureRemotePrimaryList();
+    await pullRemoteSync({forceRender:true});
+  });
+}
+
+async function loadRemotePlan(){
+  const client = getSupabaseClient();
+
+  if(!client || !currentUser?.id){
+    return loadCurrentPlan();
+  }
+
+  const {data} = await client
+    .from("profiles")
+    .select("plan, custom_theme")
+    .eq("id", currentUser.id)
+    .maybeSingle();
+
+  if(data?.custom_theme){
+    try {
+      localStorage.setItem(customThemeStorageKey, data.custom_theme);
+    } catch(error) {}
+  }
+
+  return plans[data?.plan] ? data.plan : loadCurrentPlan();
+}
+
+async function saveRemoteProfile(){
+  const client = getSupabaseClient();
+
+  if(!client || !currentUser?.id){
+    return;
+  }
+
+  await client
+    .from("profiles")
+    .update({
+      name: currentUser.name,
+      plan: currentPlan,
+      custom_theme: loadCustomTheme()
+    })
+    .eq("id", currentUser.id);
+}
+
+async function ensureRemotePrimaryList(){
+  const client = getSupabaseClient();
+
+  if(!client || !currentUser?.id){
+    return "";
+  }
+
+  if(remotePrimaryListId){
+    return remotePrimaryListId;
+  }
+
+  const {data: existingList} = await client
+    .from("shopping_lists")
+    .select("id")
+    .eq("owner_id", currentUser.id)
+    .eq("is_primary", true)
+    .maybeSingle();
+
+  if(existingList?.id){
+    remotePrimaryListId = existingList.id;
+    return remotePrimaryListId;
+  }
+
+  const {data: createdList, error} = await client
+    .from("shopping_lists")
+    .insert({
+      owner_id: currentUser.id,
+      name: "Lista principal",
+      is_primary: true
+    })
+    .select("id")
+    .single();
+
+  if(error){
+    setSyncStatus("Nao foi possivel criar lista no Supabase.", "error");
+    return "";
+  }
+
+  remotePrimaryListId = createdList.id;
+  return remotePrimaryListId;
 }
 
 function setLoginStatus(message, type = "error"){
@@ -2251,9 +2415,41 @@ function setCurrentUser(userId){
   updateAccountStatusLabel();
 }
 
-function createAccount({email,password,name}){
+async function createAccount({email,password,name}){
   if(!email || !password){
     setLoginStatus("Informe e-mail e senha para criar a conta.");
+    return;
+  }
+
+  const client = getSupabaseClient();
+
+  if(client){
+    const {data, error} = await client.auth.signUp({
+      email,
+      password,
+      options: {data: {name: name || email.split("@")[0]}}
+    });
+
+    if(error){
+      setLoginStatus(error.message || "Nao foi possivel criar a conta.");
+      return;
+    }
+
+    const sessionUser = userFromSupabaseSession(data?.session);
+
+    if(sessionUser){
+      currentUser = sessionUser;
+      currentPlan = await loadRemotePlan();
+      await ensureRemotePrimaryList();
+      await pushRemoteSync();
+      updateCurrentPlanLabel();
+      updateAccountStatusLabel();
+      setLoginStatus("Conta criada.", "ok");
+      enterApp();
+      return;
+    }
+
+    setLoginStatus("Conta criada. Confira seu e-mail para confirmar o acesso.", "ok");
     return;
   }
 
@@ -2279,7 +2475,34 @@ function createAccount({email,password,name}){
   enterApp();
 }
 
-function loginAccount(email,password){
+async function loginAccount(email,password){
+  const client = getSupabaseClient();
+
+  if(client){
+    const {data, error} = await client.auth.signInWithPassword({email, password});
+
+    if(error){
+      setLoginStatus(error.message || "Nao foi possivel entrar.");
+      return;
+    }
+
+    currentUser = userFromSupabaseSession(data?.session);
+
+    if(!currentUser){
+      setLoginStatus("Login realizado, mas a sessao nao foi carregada.");
+      return;
+    }
+
+    currentPlan = await loadRemotePlan();
+    await ensureRemotePrimaryList();
+    await pullRemoteSync({forceRender:true});
+    updateCurrentPlanLabel();
+    updateAccountStatusLabel();
+    setLoginStatus("Login realizado.", "ok");
+    enterApp();
+    return;
+  }
+
   const account = accounts.find((candidate)=>candidate.email === email && candidate.password === password);
 
   if(!account){
@@ -2292,8 +2515,15 @@ function loginAccount(email,password){
   enterApp();
 }
 
-function logoutAccount(){
+async function logoutAccount(){
+  const client = getSupabaseClient();
+
+  if(client){
+    await client.auth.signOut();
+  }
+
   setCurrentUser(null);
+  remotePrimaryListId = "";
   closeAccountPanel();
   document.body.classList.add("intro-active");
   const introLayer = document.getElementById("introLayer");
@@ -2351,6 +2581,7 @@ function saveCurrentPlan(planKey){
   updateAccountStatusLabel();
   renderPlans();
   renderPlanTools();
+  saveRemoteProfile();
 }
 
 function updateCurrentPlanLabel(){
@@ -2763,7 +2994,7 @@ function save(savedAt = new Date().toISOString()){
 }
 
 function canSyncRemote(){
-  return location.protocol === "https:" || location.hostname === "localhost";
+  return Boolean(currentUser?.id) || location.protocol === "https:" || location.hostname === "localhost";
 }
 
 function queueRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
@@ -2778,6 +3009,48 @@ function queueRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
 async function pushRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
   if(!canSyncRemote() || !navigator.onLine){
     return;
+  }
+
+  const client = getSupabaseClient();
+
+  if(client && currentUser?.id){
+    try {
+      const listId = await ensureRemotePrimaryList();
+
+      if(!listId){
+        return;
+      }
+
+      const rows = items.map(normalizeItem).map((item)=>({
+        id: item.id,
+        list_id: listId,
+        owner_id: currentUser.id,
+        name: item.name,
+        category: item.cat,
+        quantity: Number(item.qty || 0),
+        done: Boolean(item.done),
+        deleted: Boolean(item.deleted),
+        updated_at: item.updatedAt || updatedAt || new Date().toISOString()
+      }));
+
+      if(rows.length){
+        const {error} = await client
+          .from("shopping_items")
+          .upsert(rows, {onConflict: "list_id,id"});
+
+        if(error){
+          setSyncStatus(`Nao foi possivel enviar ao Supabase. ${error.message}`, "error");
+          return;
+        }
+      }
+
+      await saveRemoteProfile();
+      setSyncStatus("Alteracoes enviadas ao Supabase.", "ok");
+      return;
+    } catch(error) {
+      setSyncStatus("Falha ao enviar ao Supabase.", "error");
+      return;
+    }
   }
 
   try {
@@ -3062,6 +3335,71 @@ async function pullRemoteSync({forceRender = false, showStatus = false} = {}){
   if(!canSyncRemote() || !navigator.onLine){
     setSyncStatus("Sincronização disponível somente no app publicado online.");
     return;
+  }
+
+  const client = getSupabaseClient();
+
+  if(client && currentUser?.id){
+    try {
+      if(showStatus){
+        setSyncing(true);
+      }
+
+      const listId = await ensureRemotePrimaryList();
+
+      if(!listId){
+        return;
+      }
+
+      const {data, error} = await client
+        .from("shopping_items")
+        .select("id, name, category, quantity, done, deleted, updated_at")
+        .eq("list_id", listId)
+        .order("updated_at", {ascending:false});
+
+      if(error){
+        setSyncStatus(`Sincronizacao Supabase indisponivel. ${error.message}`, "error");
+        return;
+      }
+
+      const remoteItems = (data || []).map((item)=>({
+        id: item.id,
+        name: item.name,
+        cat: item.category,
+        qty: Number(item.quantity || 0),
+        done: Boolean(item.done),
+        deleted: Boolean(item.deleted),
+        updatedAt: item.updated_at || initialItemDate
+      }));
+
+      if(!remoteItems.length){
+        await pushRemoteSync();
+        return;
+      }
+
+      const merged = mergeRemoteItems(remoteItems);
+
+      if(merged){
+        isApplyingRemoteSync = true;
+        saveLocal(new Date().toISOString());
+        isApplyingRemoteSync = false;
+      }
+
+      setSyncStatus("Sincronizado com Supabase.", "ok");
+
+      if(merged || forceRender){
+        populateCategorySelect();
+        render();
+      }
+      return;
+    } catch(error) {
+      setSyncStatus("Falha ao sincronizar com Supabase.", "error");
+      return;
+    } finally {
+      if(showStatus){
+        setSyncing(false);
+      }
+    }
   }
 
   try {
@@ -4011,13 +4349,14 @@ applyCustomTheme(loadCustomTheme());
 updateCurrentPlanLabel();
 updateAccountStatusLabel();
 render();
+loadSupabaseSession();
 pullRemoteSync();
 
 setInterval(() => {
   if(document.visibilityState === "visible"){
     pullRemoteSync();
   }
-}, 1200);
+}, 10000);
 
 window.addEventListener("pagehide", () => pushRemoteSync());
 window.addEventListener("beforeunload", () => pushRemoteSync());
