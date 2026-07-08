@@ -89,6 +89,12 @@ create table if not exists public.family_members (
   unique (owner_id, email)
 );
 
+drop trigger if exists profiles_set_updated_at on public.profiles;
+drop trigger if exists shopping_lists_set_updated_at on public.shopping_lists;
+drop trigger if exists shopping_items_set_updated_at on public.shopping_items;
+drop trigger if exists categories_set_updated_at on public.categories;
+drop trigger if exists family_members_set_updated_at on public.family_members;
+
 create trigger profiles_set_updated_at
   before update on public.profiles
   for each row execute function public.set_updated_at();
@@ -115,6 +121,20 @@ alter table public.shopping_items enable row level security;
 alter table public.categories enable row level security;
 alter table public.purchase_history enable row level security;
 alter table public.family_members enable row level security;
+
+drop policy if exists "profiles_select_own" on public.profiles;
+drop policy if exists "profiles_update_own" on public.profiles;
+drop policy if exists "shopping_lists_select_own" on public.shopping_lists;
+drop policy if exists "shopping_lists_insert_own" on public.shopping_lists;
+drop policy if exists "shopping_lists_update_own" on public.shopping_lists;
+drop policy if exists "shopping_lists_delete_own" on public.shopping_lists;
+drop policy if exists "shopping_items_select_own" on public.shopping_items;
+drop policy if exists "shopping_items_insert_own" on public.shopping_items;
+drop policy if exists "shopping_items_update_own" on public.shopping_items;
+drop policy if exists "shopping_items_delete_own" on public.shopping_items;
+drop policy if exists "categories_manage_own" on public.categories;
+drop policy if exists "purchase_history_manage_own" on public.purchase_history;
+drop policy if exists "family_members_manage_own" on public.family_members;
 
 create policy "profiles_select_own"
   on public.profiles for select
