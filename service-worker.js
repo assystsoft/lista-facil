@@ -1,4 +1,4 @@
-const CACHE_NAME = "lista-facil-v17";
+const CACHE_NAME = "lista-facil-v18";
 
 const APP_FILES = [
   "./",

@@ -1668,12 +1668,12 @@ select.field {
         </div>
 
         <div class="login-actions">
-          <button class="login-btn secondary" type="button" onclick="enterApp()">Continuar sem login</button>
+          <button class="login-btn secondary" type="button" onclick="continueWithoutLogin()">Continuar sem login</button>
           <button class="login-link" type="button" onclick="toggleAuthMode()">Criar conta</button>
         </div>
 
         <div class="login-status" id="loginStatus"></div>
-        <p class="login-note">Entre para sincronizar na nuvem. Sem login, seus dados ficam neste aparelho.</p>
+        <p class="login-note">Cadastre-se para salvar e sincronizar sua lista em qualquer dispositivo.</p>
       </div>
     </section>
   </div>
@@ -2135,6 +2135,17 @@ function enterApp(){
   }
 }
 
+function continueWithoutLogin(){
+  currentUser = null;
+  remotePrimaryListId = "";
+  try {
+    localStorage.removeItem(authSessionStorageKey);
+  } catch(error) {}
+  updateAccountStatusLabel();
+  enterApp();
+  setSyncStatus("Cadastre-se para salvar e sincronizar sua lista em qualquer dispositivo.");
+}
+
 async function handleLogin(event){
   event.preventDefault();
   const email = cleanEmail(document.getElementById("loginEmail")?.value);
@@ -2149,29 +2160,26 @@ async function handleLogin(event){
   loginAccount(email, password);
 }
 
-function handleSocialLogin(provider){
-  const email = `${provider.toLowerCase().replace(/\s+/g, "")}@lista-facil.local`;
-  const existingAccount = accounts.find((account)=>account.email === email);
+async function handleSocialLogin(provider){
+  const client = getSupabaseClient();
 
-  if(existingAccount){
-    setCurrentUser(existingAccount.id);
-  } else {
-    const account = {
-      id: `user-${Date.now()}`,
-      name: provider,
-      email,
-      password: "",
-      provider,
-      plan: "free",
-      createdAt: new Date().toISOString()
-    };
-
-    accounts.push(account);
-    saveAccounts();
-    setCurrentUser(account.id);
+  if(!client){
+    setLoginStatus("Configure o Supabase para entrar com Google ou Apple.");
+    return;
   }
 
-  enterApp();
+  const providerKey = provider === "Apple ID" ? "apple" : "google";
+  const redirectTo = getAuthRedirectUrl();
+  const {error} = await client.auth.signInWithOAuth({
+    provider: providerKey,
+    options: {
+      redirectTo
+    }
+  });
+
+  if(error){
+    setLoginStatus(error.message || `Nao foi possivel entrar com ${provider}.`);
+  }
 }
 
 function cleanEmail(email){
@@ -2200,6 +2208,14 @@ function getSupabaseClient(){
 
 function hasSupabaseSessionUser(){
   return currentUser?.provider === "supabase" && Boolean(currentUser.id);
+}
+
+function getAuthRedirectUrl(){
+  if(location.protocol === "file:"){
+    return "https://assystsoft.github.io/lista-facil/smart-lista.html";
+  }
+
+  return location.href.split("#")[0];
 }
 
 function userFromSupabaseSession(session){
@@ -3023,8 +3039,12 @@ function save(savedAt = new Date().toISOString()){
   }
 }
 
+function canUseLegacyRemoteSync(){
+  return !isSupabaseConfigured() && (location.protocol === "https:" || location.hostname === "localhost");
+}
+
 function canSyncRemote(){
-  return hasSupabaseSessionUser() || location.protocol === "https:" || location.hostname === "localhost";
+  return hasSupabaseSessionUser() || canUseLegacyRemoteSync();
 }
 
 function queueRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
@@ -3365,7 +3385,7 @@ function setSyncStatus(message, type = ""){
 
 async function pullRemoteSync({forceRender = false, showStatus = false} = {}){
   if(!canSyncRemote() || !navigator.onLine){
-    setSyncStatus("Sincronização disponível somente no app publicado online.");
+    setSyncStatus("Cadastre-se para salvar e sincronizar sua lista em qualquer dispositivo.");
     return;
   }
 
