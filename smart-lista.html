@@ -2198,6 +2198,10 @@ function getSupabaseClient(){
   return supabaseClient;
 }
 
+function hasSupabaseSessionUser(){
+  return currentUser?.provider === "supabase" && Boolean(currentUser.id);
+}
+
 function userFromSupabaseSession(session){
   const user = session?.user;
 
@@ -2227,6 +2231,9 @@ async function loadSupabaseSession(){
 
   if(sessionUser){
     currentUser = sessionUser;
+    try {
+      localStorage.removeItem(authSessionStorageKey);
+    } catch(error) {}
     currentPlan = await loadRemotePlan();
     updateCurrentPlanLabel();
     updateAccountStatusLabel();
@@ -2246,6 +2253,9 @@ async function loadSupabaseSession(){
     }
 
     currentUser = nextUser;
+    try {
+      localStorage.removeItem(authSessionStorageKey);
+    } catch(error) {}
     currentPlan = await loadRemotePlan();
     updateCurrentPlanLabel();
     updateAccountStatusLabel();
@@ -2257,7 +2267,7 @@ async function loadSupabaseSession(){
 async function loadRemotePlan(){
   const client = getSupabaseClient();
 
-  if(!client || !currentUser?.id){
+  if(!client || !hasSupabaseSessionUser()){
     return loadCurrentPlan();
   }
 
@@ -2279,7 +2289,7 @@ async function loadRemotePlan(){
 async function saveRemoteProfile(){
   const client = getSupabaseClient();
 
-  if(!client || !currentUser?.id){
+  if(!client || !hasSupabaseSessionUser()){
     return;
   }
 
@@ -2296,7 +2306,7 @@ async function saveRemoteProfile(){
 async function ensureRemotePrimaryList(){
   const client = getSupabaseClient();
 
-  if(!client || !currentUser?.id){
+  if(!client || !hasSupabaseSessionUser()){
     return "";
   }
 
@@ -3014,7 +3024,7 @@ function save(savedAt = new Date().toISOString()){
 }
 
 function canSyncRemote(){
-  return Boolean(currentUser?.id) || location.protocol === "https:" || location.hostname === "localhost";
+  return hasSupabaseSessionUser() || location.protocol === "https:" || location.hostname === "localhost";
 }
 
 function queueRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
@@ -3033,7 +3043,7 @@ async function pushRemoteSync(updatedAt = localStorage.getItem(lastSavedKey)){
 
   const client = getSupabaseClient();
 
-  if(client && currentUser?.id){
+  if(client && hasSupabaseSessionUser()){
     try {
       const listId = await ensureRemotePrimaryList();
 
@@ -3361,7 +3371,7 @@ async function pullRemoteSync({forceRender = false, showStatus = false} = {}){
 
   const client = getSupabaseClient();
 
-  if(client && currentUser?.id){
+  if(client && hasSupabaseSessionUser()){
     try {
       if(showStatus){
         setSyncing(true);
